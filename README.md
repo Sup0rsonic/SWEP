@@ -16,15 +16,14 @@ python swep.py<br>
 Don't use it to do illegal things. Although we don't really care if you did<br>
 And we have no reponsibility if you do that, so take care.
 ## Features
-> Web exploitation tools
-> Scanner and spider
-> Information gathering tools
-> Interactive and user-friendly
-> Supports windows, linux and macos stuff
+> Web exploitation tools</br>
+> Scanner and spider</br>
+> Information gathering tools</br>
+> Interactive and user-friendly</br>
+> Supports windows, linux and macos stuff</br>
 ## JOIN US
 This is a new project and we want you join this project and work together.
 ### News
 :tada: Inital release! :tada: 
-
 ### Contact us
 Contact us at intercepter@gmail.com 
