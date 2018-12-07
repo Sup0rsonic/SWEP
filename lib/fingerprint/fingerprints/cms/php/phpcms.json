@@ -1,0 +1,16 @@
+{"name":"phpcms",
+"hash":[
+  {"index.php":"blah"},
+  {"robots.txt":"5cc8ef6eff03aefd33840ac292e0e846"},
+  {}
+],
+  "file":[
+    {"phpsso_server/":403},
+    {"phpcms/":403},
+    //{"index.php?m=member&c=index&a=register&siteid=1":200},
+    {"phpcms/index.html":200}
+  ],
+  "header":[
+    "phpcms"
+  ]
+}

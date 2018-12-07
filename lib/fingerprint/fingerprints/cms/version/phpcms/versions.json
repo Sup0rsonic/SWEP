@@ -1,0 +1,14 @@
+{
+  "cms":"phpcms",
+  "versions":{
+    "code":[
+      "/test/test|123321|200"
+    ],
+    "hash":[
+      "/test/test|321321|098f6bcd4621d373cade4e832627b4f6"
+    ],
+    "page":[
+      "/test/test|123321"
+    ]
+  }
+}

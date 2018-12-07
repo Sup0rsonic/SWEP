@@ -1,0 +1,8 @@
+{
+  "CmsName":"phpcms",
+  "version":[
+   "v9|/index.php|powered by phpcms",
+    "2008|/admin.php|PHPCMS 2008",
+    "2007|/admin.php|PHPCMS 2007",
+  ]
+}

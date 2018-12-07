@@ -1,0 +1,6 @@
+{
+  "exploit":[
+    {"file": "phpcms_960_getshell", "name" :"PHPCMS 9.6.0 Getshell", "id": "1"},
+    {"file": "dedecms_57_aue", "name": "DedeCMS 5.7 arbitrary user password modification", "id": "2"}
+  ]
+}
