@@ -3,6 +3,7 @@
     "sql": ["lib.scanner.SQLInjectionScanner.Scanner", "SQL Injection scanner"],
     "ftp": ["lib.scanner.FTPPasswordScanner.FTPPasswordScanner", "FTP password scanner"],
     "manage": ["lib.scanner.ManagementScanner.ManagementScanner", "Management page scanner"],
-    "file": ["lib.scanner.SensitiveFileScanner.SensitiveFileScanner", "Sensitive file scanner"]
+    "file": ["lib.scanner.SensitiveFileScanner.SensitiveFileScanner", "Sensitive file scanner"],
+    "shellpwd": ["lib.scanner.WebshellPasswordScanner.Scanner", "Webshell Password Scanner"]
   }
 }
