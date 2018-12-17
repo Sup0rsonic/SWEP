@@ -26,7 +26,7 @@ And we have no reponsibility if you do that, so take care.
 This is a new project and we want you join this project and work together.
 ### News
 :tada: Inital release! :tada: <br>
-18 Dec 2018: Updated some exploit.
+18 Dec,2018: Updated some exploit.
 ### Contact us
 Contact us at intercepter@gmail.com 
 
