@@ -25,7 +25,8 @@ And we have no reponsibility if you do that, so take care.
 ## JOIN US
 This is a new project and we want you join this project and work together.
 ### News
-:tada: Inital release! :tada: 
+:tada: Inital release! :tada: <br>
+2018:12:18 Updated some exploit.
 ### Contact us
 Contact us at intercepter@gmail.com 
 
