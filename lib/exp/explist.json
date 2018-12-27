@@ -1,10 +1,11 @@
 {
   "exploit":[
     {"file": "phpcms_960_getshell", "name" :"PHPCMS 9.6.0 Getshell", "id": "1"},
-    {"file": "dedecms_57_aue", "name": "DedeCMS 5.7 arbitrary user password modification", "id": "2"}
-    {"file": "thinkphp_5x_rce", "name": "ThinkPHP 5.X remote code execution"},
-    {"file": "zzcms_82_afr", "name": "ZZCMS 8.2 arbitrary file read"},
-    {"file": "zzcms_82_getshell", "name": "ZZCMS 8.2 Getshell"},
-    {"file": "phpcms_2008_ci", "name": "PHPCMS 2008 Code injection"}
+    {"file": "dedecms_57_aue", "name": "DedeCMS 5.7 arbitrary user password modification", "id": "2"},
+    {"file": "thinkphp_5x_rce", "name": "ThinkPHP 5.X remote code execution", "id": "3"},
+    {"file": "zzcms_82_afr", "name": "ZZCMS 8.2 arbitrary file read", "id": "4"},
+    {"file": "zzcms_82_getshell", "name": "ZZCMS 8.2 Getshell", "id": "5"},
+    {"file": "phpcms_2008_ci", "name": "PHPCMS 2008 Code injection", "id": "6"}
   ]
 }
+
