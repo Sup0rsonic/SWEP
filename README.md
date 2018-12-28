@@ -11,6 +11,8 @@ This project supports python 2.7<br>
 Requirement:<br>
 requests<br>
 pickie<br>
+sqlite3<br>
+and more.<br>
 ## Usage
 python swep.py<br>
 ## Disclaimer
