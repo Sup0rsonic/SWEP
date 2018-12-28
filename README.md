@@ -4,7 +4,7 @@
 </br>
 SWEP is an open-source Web Exploitation Project.
 ## Version
-Ver 1.0 development unstable
+Ver 1.0.1 development unstable
 ## Description
 SWEP is an (not very) easy-to-use, user-friendly highly-customizable scanner and web vulnerability exploitation framework.<br>
 This project supports python 2.7<br>
@@ -25,8 +25,9 @@ And we have no reponsibility if you do that, so take care.
 ## JOIN US
 This is a new project and we want you join this project and work together.
 ### News
-:tada: Inital release! :tada: <br>
+:tada: 1.0.1 Released! :tada: <br>
 18 Dec, 2018: Updated some exploit.
+29 Dec, 2018: 1.0.1 Released, Added database mechanism.
 ### Contact us
 Contact us at intercepter@gmail.com 
 
