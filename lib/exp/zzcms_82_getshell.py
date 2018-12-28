@@ -1,6 +1,26 @@
 import requests
 
 
+# Exploit found by BREACHERS
+# No referer
+
+
+def info(): # Exploit information for database mechanism
+    info = {
+        'name': 'zzcms_82_getshell',
+        'description': 'ZZCMS 8.2 Getshell',
+        'date': '2018-12-27',
+        'parameters':{
+            'url': 'Target URL',
+            'password': 'Shell password',
+            'timeout': 'Request timeout'
+        },
+        'referer': 'None'
+    }
+    return info
+
+
+
 class exploit():
     def __init__(self):
         self.param = {'url': None, 'password': None, 'timeout': 3}
@@ -35,13 +55,14 @@ class exploit():
 
 
     def info(self):
-        print '''
-        ZZCMS 8.2 GETSHELL
-        Parameters:
-            url: Target address
-            password: Shell password
-            timeout: Timeout
-        Referer:
-            None
-        '''
+        ExpInf = info()
+        print '[*] Incoming exploit information.'
+        print ' |   NAME: %s' %(ExpInf['name'])
+        print ' |   DESCRIPTION: %s' %(ExpInf['description'])
+        print ' |   DATE: %s' %(ExpInf['date'])
+        print ' |   PARAMETERS:'
+        parameters = ExpInf['parameters']
+        for item in ExpInf['parameters'].keys():
+            print ' |   |  %s: %s' %(item, parameters[item])
+        print ' |   REFERER: %s' %(ExpInf['referer'])
         return

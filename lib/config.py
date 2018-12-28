@@ -12,6 +12,7 @@ DatabasePassword = None
 # SQLite database information
 
 DatabaseFile = 'swepdb.sqlite'
+DatabaseBackupLog = '.swepbackup'
 
 # API keys
 

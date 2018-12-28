@@ -6,6 +6,24 @@ import re
 
 sess = requests.session()
 
+
+def info(): # Exploit information for database mechanism
+    info = {
+        'name': 'phpcms_960_getshell',
+        'description': 'PHPCMS 9.6.0 Getshell',
+        'date': '2018-12-27',
+        'parameter':{
+            'url': 'Target addr',
+            'password': 'Shell password',
+            'timeout': 'Request timeout. Default: 10',
+            'shelladdr': 'Shell address.'
+        },
+        'referer': 'https://blog.csdn.net/m0_37438418/article/details/80956970\nhttps://github.com/coffeehb/Some-PoC-oR-ExP/blob/master/phpcms/phpcms9.6.0-getshell.py'
+    }
+    return info
+
+
+
 class exploit():
     def __init__(self):
         self.param = {'url': None, 'password': None, 'shelladdr': None, 'time': None, 'timeout': 10}
@@ -36,16 +54,16 @@ class exploit():
             return 1
         return 0
 
+
     def info(self):
-        print '''
-        PHPCMS v9.6.0 Add user page getshell
-        Parameters:
-            url: Target addr
-            password: Shell password
-            timeout: Max connection time
-            shelladdr: Shell address
-        Referer: 
-            https://blog.csdn.net/m0_37438418/article/details/80956970
-            https://github.com/coffeehb/Some-PoC-oR-ExP/blob/master/phpcms/phpcms9.6.0-getshell.py
-        '''
-        pass
+        ExpInf = info()
+        print '[*] Incoming exploit information.'
+        print ' |   NAME: %s' %(ExpInf['name'])
+        print ' |   DESCRIPTION: %s' %(ExpInf['description'])
+        print ' |   DATE: %s' %(ExpInf['date'])
+        print ' |   PARAMETERS:'
+        parameters = ExpInf['parameters']
+        for item in ExpInf['parameters'].keys():
+            print ' |   |  %s: %s' %(item, parameters[item])
+        print ' |   REFERER: %s' %(ExpInf['referer'])
+        return

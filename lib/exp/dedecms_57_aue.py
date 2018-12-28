@@ -2,6 +2,24 @@ import requests
 import re
 
 
+def info(): # Exploit information for database mechanism
+    info = {
+        'name': 'dedecms_57_aue',
+        'description': 'DEDEcms 5.2 arbitary user password modification',
+        'date': '2018-12-27',
+        'parameters': {
+            'url': 'Target addr',
+            'protocol': 'Protocol. Default: http',
+            'username': 'Username. Default: admin',
+            'password': 'Password. Default: 123456',
+            'timeout': 'Request timeout. Default: 10',
+            'userpage': 'Password changing page, Default: resetpassword.php'
+        },
+        'referer': 'https://github.com/SecWiki/CMS-Hunter/tree/master/DedeCMS/DedeCMS_V5.7'
+    }
+    return info
+
+
 class exploit():
     def __init__(self):
         self.param = {'url': None, 'protocol': 'http','username': 'admin', 'password': '123456', 'userpage': '/dede/member/resetpassword.php', 'timeout': 10}
@@ -28,15 +46,14 @@ class exploit():
 
 
     def info(self):
-        print '''
-        DEDECMS v5.7 arbitrary user password modification
-        Parameters:
-            url: Target addr
-            protocol: Protocol ,default: http
-            username: Username ,dafault: admin
-            password: Password ,default: 123456
-            timeout: Timeout , default: 10
-            userpage: Password changing page ,default: /dede/member/resetpassword.php
-        Referer:
-            https://github.com/SecWiki/CMS-Hunter/tree/master/DedeCMS/DedeCMS_V5.7_
-        '''
+        ExpInf = info()
+        print '[*] Incoming exploit information.'
+        print ' |   NAME: %s' %(ExpInf['name'])
+        print ' |   DESCRIPTION: %s' %(ExpInf['description'])
+        print ' |   DATE: %s' %(ExpInf['date'])
+        print ' |   PARAMETERS:'
+        parameters = ExpInf['parameters']
+        for item in ExpInf['parameters'].keys():
+            print ' |   |  %s: %s' %(item, parameters[item])
+        print ' |   REFERER: %s' %(ExpInf['referer'])
+        return

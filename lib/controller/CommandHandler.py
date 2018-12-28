@@ -6,7 +6,8 @@ import FunctionLib
 import ScannerController
 import DatabaseHandler
 import ExploitLoader
-
+import lib.config
+import datetime
 
 # Command Handler. Load at init
 
@@ -46,7 +47,7 @@ class CommandHandler():
             if CommandDict[0] == 'search':
                 if self._ParmCheck('search', CommandDict):
                     return
-                self.Search(CommandDict[1])
+                self.SearchExploit(CommandDict[1])
             elif CommandDict[0] == 'use':
                 if self._ParmCheck('use', CommandDict):
                     return
@@ -120,6 +121,11 @@ class CommandHandler():
                     self.HelpController.help('database')
                     return
                 self.Database(CommandDict[1])
+            elif CommandDict[0] == 'swepdb':
+                if len(CommandDict) < 2:
+                    self.HelpController.usage('swepdb')
+                    return
+                self.SWEPdb(CommandDict[1])
             elif CommandDict[0] == 'help':
                 self.HelpController.help('help')
             else:
@@ -422,3 +428,86 @@ class CommandHandler():
             print '[!] Failed to load info: %s.' %(str(e))
         return
 
+
+    def SWEPdb(self, cmd):
+        CommandDict = cmd.split(' ')
+        if CommandDict[0] == 'init':
+            if raw_input('[*] This will delete ALL data from database. Are you sure? (Y/N) ').upper() != 'Y':
+                return
+            self.DatabaseHandler.Database.Execute('DROP TABLE IF EXISTS exploit')
+            self.DatabaseHandler.Database.Execute('DROP TABLE IF EXISTS sessions')
+            self.DatabaseHandler.Database.Execute('DROP TABLE IF EXISTS hosts')
+            self.DatabaseHandler.Database.Execute('DROP TABLE IF EXISTS wshell')
+            self.DatabaseHandler.Database.Connection.commit()
+            self.DatabaseHandler.Database.Init()
+            self.DatabaseHandler.ExploitUpdate()
+            print '[+] Initialize completed.'
+        elif CommandDict[0] == 'update':
+            self.DatabaseHandler.ExploitUpdate()
+        elif CommandDict[0] == 'backup':
+            if len(CommandDict) < 2 :
+                self.HelpController.usage('swepdb_backup')
+                return
+            try:
+                pass
+                with open(CommandDict[1], 'wb+') as f:
+                    f.write(open(lib.config.DatabaseFile, 'rb+').read())
+                    with open (lib.config.DatabaseBackupLog, 'a+') as b:
+                        b.write('%s@%s\n' % (CommandDict[1], datetime.datetime.today()))
+            except Exception, e:
+                print '[!] Failed to backup database: %s.' %(str(e))
+                return
+            print '[+] Backup success, file saved as %s' %(CommandDict[1])
+        elif CommandDict[0] == 'restore':
+            if len(CommandDict) < 2:
+                self.HelpController.usage('swepdb_restore')
+                return
+            try:
+                try:
+                    open(CommandDict[1], 'r')
+                except IOError:
+                    print '[*] Backup file not found.'
+                    return
+                os.remove(lib.config.DatabaseFile)
+                with open(lib.config.DatabaseFile, 'wb+') as f:
+                    f.write(open(CommandDict[1], 'rb').read())
+                    print '[+] Database restore success.'
+            except Exception, e:
+                print '[!] Failed to restore database: %s' %(str(e))
+                return
+            return
+        elif CommandDict[0] == 'info':
+            print '[*] Incoming SWEP Database informations.'
+            print ' |   SWEP Database file name: %s' %(lib.config.DatabaseFile)
+            print ' |   SWEP Database file location: %s' %(os.path.abspath(lib.config.DatabaseFile))
+            print ' |   Last modify: %s' %(os.path.getmtime(os.path.abspath(lib.config.DatabaseFile)))
+            print ' |   File size: %s' %(os.path.getsize(os.path.abspath(lib.config.DatabaseFile)))
+            print ' |   Backup file list: '
+            print ' |     | FILENAME            DATE'
+            print ' |     | --------            ----'
+            for item in open(lib.config.DatabaseBackupLog, 'r+').readlines():
+                print ' |     | %s%s' %(item.split('@')[0].ljust(20), item.split('@')[1].rstrip('\n'))
+            print '[*] << EOF'
+        elif CommandDict[0] == 'help':
+            self.HelpController.help('swepdb')
+        else:
+            self.HelpController.usage('swepdb_' + CommandDict[1])
+        return
+
+
+    def SearchExploit(self, name):
+        try:
+            ExploitList = self.DatabaseHandler.Database.Query('SELECT * FROM exploit WHERE name LIKE "%' + name +'%"')
+            if not ExploitList:
+                print '[*] Exploit nof found.'
+                return
+            print '[*] Incoming exploit list.'
+            print '[*] Total %s exploit(s).' %(str(len(ExploitList)))
+            print 'NAME                DESCRIPTION'
+            print '----                 -----------'
+            for item in ExploitList:
+                print item[0].ljust(21, ' ') + item[1]
+        except Exception, e:
+            print '[!] Failed to load from database: %s.' %(str(e))
+            print '[*] Fallback to legacy mode.'
+            self.ExploitLoader.FindExp(name)

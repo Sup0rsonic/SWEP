@@ -47,7 +47,7 @@ class DBHandler():
             try:
                 self.Session.execute('CREATE TABLE IF NOT EXISTS hosts (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, addr TEXT, buffer TEXT)') # Hosts
                 self.Session.execute('CREATE TABLE IF NOT EXISTS modules (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name TEXT, path TEXT, description TEXT)')
-                self.Session.execute('CREATE TABLE IF NOT EXISTS exploit (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name TEXT, path TEXT, description TEXT)')
+                self.Session.execute('CREATE TABLE IF NOT EXISTS exploit (name TEXT PRIMARY KEY UNIQUE, description TEXT)')
                 self.Session.execute('CREATE TABLE IF NOT EXISTS sessions (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, date TEXT, info TEXT, buffer TEXT)') # Sessions for re-use. Hosts not included.
                 self.Session.execute('CREATE TABLE IF NOT EXISTS wshell (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, url TEXT, password TEXT, obfs TEXT, info TEXT)')
                 self.Connection.commit()
@@ -90,3 +90,9 @@ class DBHandler():
             print '[!] Failed to execute query %s: %s' %(str(query), str(e))
             return 0
         return 1
+
+
+    def Init(self):
+        self._Initalize()
+        return
+

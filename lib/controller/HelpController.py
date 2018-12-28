@@ -39,15 +39,27 @@ class HelpController():
         elif module == 'cd':
             print '[*] SWEP CD: So why you can see this?'
         elif module == 'database':
-            self.usage('database')
+            self.help('database')
         elif module == 'db_search':
-            print '[*] SWEP Database search: Search host. Usage: database search [keyword]'
+            print '[*] SWEP Host Database search: Search host. Usage: database search [keyword]'
         elif module == 'db_load':
-            print '[*] SWEP Database load: Load specified host. Usage: database load [sessid]'
+            print '[*] SWEP Host Database load: Load specified host. Usage: database load [sessid]'
         elif module == 'db_update':
-            print '[*] SWEP Database update: Update specified host. Usage: database update [sessid]'
+            print '[*] SWEP Host Database update: Update specified host. Usage: database update [sessid]'
         elif module == 'db_delete':
-            print '[*] SWEP Database delete: Delete specified host. Usage: database delete [sessid]'
+            print '[*] SWEP Host Database delete: Delete specified host. Usage: database delete [sessid]'
+        elif module == 'swepdb_backup':
+            print '[*] SWEP Database backup: Backup current SWEP Database. Usage: swepdb backup [filename]'
+        elif module == 'swepdb_restore':
+            print '[*] SWEPDB Database restore: Restore SWEP Database from file. Usage: swepdb restore [filename]'
+        elif module == 'swepdb':
+            print '[*] SWEPDB usage: swepdb [init update backup restore info help] *args'
+        elif module == 'swepdb_init':
+            print '[*] SWEPDB init: (DANGEROUS) Re-initialize SWEP Database. Usage: swepdb init'
+        elif module == 'swepdb_update':
+            print '[*] SWEPDB update: Update Exploit database. Usage: swepdb update'
+        elif module == 'swepdb_info':
+            print '[*] SWEPDB info: Show current database information and database backup. Usage: swepdb info'
         else:
             pass
         pass
@@ -105,6 +117,21 @@ class HelpController():
             update      Update site information.        site check update
             system      Check site operating system.    site check system
             help        Show this help
+            '''
+        elif module == 'swepdb':
+            print '''
+            /////////////////////////////////////////////////////////////
+            SWEP SWEPDB help
+            Usage: swepdb [init update backup restore info] *args
+            /////////////////////////////////////////////////////////////
+            PARAM       DESCRIPTION                     USAGE
+            -----       -----------                     -----
+            init        Initialize SWEP Database.       swepdb init
+            update      Update SWEP Database.           swepdb update
+            backup      Backup SWEP Database to file    swepdb backup *args
+            restore     Restore SWEP Database from file swepdb restore *args
+            info        Show SWEP Database info         swepdb info
+            help        Show this help                  swepdb help
             '''
         else:
             pass
