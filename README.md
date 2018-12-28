@@ -25,9 +25,14 @@ And we have no reponsibility if you do that, so take care.
 ## JOIN US
 This is a new project and we want you join this project and work together.
 ### News
-:tada: 1.0.1 Released! :tada: <br>
-18 Dec, 2018: Updated some exploit.
+:tada: Initial release! :tada: <br>
+18 Dec, 2018: Updated some exploit.<br>
 29 Dec, 2018: 1.0.1 Released, Added database mechanism.
+### Release log
+#### 1.0.1
+Added database mechanism, Now you can update exploit with a command and backup your database! of course, this supports restore, too.<br>
+New exploit search functions are provided, too. Now you can search through database and switch back to legacy mode when database got an error.<br>
+Exploit using new format. This is compatiable with database.<br>
 ### Contact us
 Contact us at intercepter@gmail.com 
 
