@@ -29,7 +29,8 @@ This is a new project and we want you join this project and work together.
 ### News
 :tada: Initial release! :tada: <br>
 18 Dec, 2018: Updated some exploit.<br>
-29 Dec, 2018: 1.0.1 Released, Added database mechanism.
+29 Dec, 2018: 1.0.1 Released, Added database mechanism.<br>
+1 Jan, 2019: Happy new year!
 ### Release log
 #### 1.0.1
 > Added database mechanism, Now you can update exploit with a command and backup your database! of course, this supports restore, too.<br>
