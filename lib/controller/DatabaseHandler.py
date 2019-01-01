@@ -131,7 +131,3 @@ class DatabaseHandler():
             except Exception, e:
                 print '[!] Failed to update an exploit: %s' %(str(e))
         print '[+] Exploit update completed, %s exploit(s) added.' %(str(counter))
-
-def test():
-    handler = DatabaseHandler()
-    handler.ExploitUpdate()
