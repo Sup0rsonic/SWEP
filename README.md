@@ -18,7 +18,6 @@ and more.<br>
 > git clone https://github.com/Sup0rsonic/SWEP.git<br>
 > pip install -r requirements.txt<br>
 > python swep.py
-And enjoy it =]
 ## Disclaimer
 ###### SWEP and BREACHER security comes with ABSOLUTATLY NO RESPONSIBILITY<br>
 Don't use it to do illegal things. Although we don't really care if you did.<br>
