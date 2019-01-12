@@ -1,8 +1,9 @@
 import os
-import sys
 import importlib
 import json
 import re
+import lib.db.db
+import lib.controller.DatabaseHandler
 
 
 class ScannerController():
@@ -12,6 +13,7 @@ class ScannerController():
         self.path = self.dir
         self.Scanner = None
         self.Name = None
+        self.Database = lib.db.db.DBHandler()
 
 
     def Interactive(self):
@@ -20,6 +22,8 @@ class ScannerController():
                 self.Name = self.Scanner.Name
             while True:
                 cmd = raw_input('SWEP Scanner(%s):%s~$ ' %(str(self.Name), self.dir))
+                if cmd == 'exit':
+                    return
                 self.InterpretCommand(cmd)
         except KeyboardInterrupt:
             print '[*] Exitting.'
@@ -80,6 +84,22 @@ class ScannerController():
         if not CommandDict:
             self.help('load')
             return
+        module = str(CommandDict[1])
+        try:
+            path = self.Database.Query('SELECT path FROM scanner WHERE name="%s"' %(module))[0][0]
+            if not path:
+                print '[!] Module not found.'
+            self.Scanner = importlib.import_module('lib.scanner.' + path).Scanner()
+            self.Name = self.Scanner.Name
+            print '[*] Load complete.'
+        except Exception, e:
+            print '[!] Failed to load module %s: %s' %(module, e)
+            print '[*] Falling back to legacy mode.'
+            self.LoadLegacy(CommandDict)
+        return
+
+
+    def LoadLegacy(self, CommandDict):
         try:
             RawJson = json.load(open('%s/lib/scanner/scanner.json' %(self.path)))
         except Exception, e:
@@ -92,16 +112,16 @@ class ScannerController():
                 return
             ModuleName = RawJson['scanner'][CommandDict[1]][0]
             try:
-                self.Module = importlib.import_module(ModuleName)
+                self.Scanner = importlib.import_module(ModuleName).Scanner()
+                self.Name = self.Scanner.Name
             except Exception, e:
                 print '[!] Failed to load scanner: %s' %(str(e))
                 return
-            self.Scanner = self.Module.Scanner()
-            self.Name = self.Scanner.Name
             print '[+] Load Success.'
         except Exception, e:
-            print '[!] Failed to load scanner.'
+            print '[!] Failed to load scanner: %s' %(str(e))
         return
+
 
 
     def Unload(self, module):
@@ -109,7 +129,6 @@ class ScannerController():
         CommandDict = self.CheckCommand(CommandDict, 1)
         if not CommandDict:
             self.help('unload')
-        self.Module = None
         self.Scanner = None
         self.Name = None
         return
@@ -148,18 +167,19 @@ class ScannerController():
 
     def List(self):
         try:
-            RawJson = json.load(open('%s/lib/scanner/scanner.json' %(self.path)))
-        except Exception, e:
-            print '[!] Failed to load json: %s' %(str(e))
+            ScannerList = self.Database.Query('SELECT * FROM scanner')
+            if not ScannerList:
+                self.ListJson()
+                return
+            print '[*] Incoming scanner list.'
+            print '[*] Total %s exploit(s).' %(str(len(ScannerList)))
+            print 'NAME                   DESCRIPTION'
+            print '----                   -----------'
+            for item in ScannerList:
+                print item[0].ljust(23) + item[1]
             return
-        ScannerList = RawJson['scanner']
-        print '[*] SWEP Scanner list:'
-        print 'NAME               DESCRIPTION'
-        print '----               -----------'
-        for name in ScannerList.keys():
-            print "%s%s" %(str(name).ljust(19, ' '), ScannerList[name][1])
-        return
-
+        except Exception ,e:
+            print '[!] Failed to fetch scanner list: %s' %(str(e))
 
 
     def Scan(self):
@@ -227,7 +247,22 @@ class ScannerController():
         return
 
 
+    def ListJson(self):
+        print '[*] Database not found, using legacy mode.'
+        try:
+            RawJson = json.load(open('%s/lib/scanner/scanner.json' %(self.path)))
+        except Exception, e:
+            print '[!] Failed to load json: %s' %(str(e))
+            return
+        ScannerList = RawJson['scanner']
+        print '[*] SWEP Scanner list:'
+        print 'NAME               DESCRIPTION'
+        print '----               -----------'
+        for name in ScannerList.keys():
+            print "%s%s" %(str(name).ljust(19, ' '), ScannerList[name][1])
+        return
+
+
+
 def test():
     controller = ScannerController()
-    controller.Interactive()
-

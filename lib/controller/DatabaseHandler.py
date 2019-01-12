@@ -1,5 +1,7 @@
 import lib.db.db
-from lib.controller import Expdb
+import SwepDB
+from lib.controller import ExploitHandler
+from lib.controller import ScannerHandler
 import FunctionLib
 import pickle
 import base64
@@ -8,7 +10,7 @@ import base64
 class DatabaseHandler():
     def __init__(self):
         self.Database = lib.db.db.DBHandler()
-        self.ExploitLoader = Expdb.ExploitLoader()
+        self.SwepDB = SwepDB.SWEPdb()
 
 
     def Connnect(self):
@@ -116,18 +118,6 @@ class DatabaseHandler():
         return UnserializedObject
 
 
-    def ExploitUpdate(self):
-        ExploitNameList = []
-        ExploitList = self.ExploitLoader.LoadExploit()
-        for item in ExploitList:
-            ExploitFile = {item['name']: item['description']}
-            if ExploitFile not in ExploitNameList:
-                ExploitNameList.append(ExploitFile)
-        counter = 0
-        for item in ExploitNameList:
-            try:
-                self.Database.Execute('INSERT OR REPLACE INTO exploit VALUES("%s", "%s")' %(item.keys()[0], item[item.keys()[0]]))
-                counter += 1
-            except Exception, e:
-                print '[!] Failed to update an exploit: %s' %(str(e))
-        print '[+] Exploit update completed, %s exploit(s) added.' %(str(counter))
+    def Update(self):
+        self.SwepDB.ExploitUpdate()
+        self.SwepDB.ScannerUpdate()

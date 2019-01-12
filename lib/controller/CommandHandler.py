@@ -5,6 +5,7 @@ import HelpController
 import FunctionLib
 import ScannerController
 import DatabaseHandler
+import ExploitHandler
 import ExploitLoader
 import lib.config
 import datetime
@@ -22,7 +23,7 @@ class CommandHandler():
         self.Scanner = ScannerController.ScannerController()
         self.Exploit = None
         self.DatabaseHandler = DatabaseHandler.DatabaseHandler()
-        self.ExploitLoader = ExploitLoader.ExploitHandler()
+        self.ExploitLoader = ExploitHandler.ExploitHandler()
         try:
             os.chdir(self.dir)
         except:
@@ -438,12 +439,13 @@ class CommandHandler():
             self.DatabaseHandler.Database.Execute('DROP TABLE IF EXISTS sessions')
             self.DatabaseHandler.Database.Execute('DROP TABLE IF EXISTS hosts')
             self.DatabaseHandler.Database.Execute('DROP TABLE IF EXISTS wshell')
+            self.DatabaseHandler.Database.Execute('DROP TABLE IF EXISTS scanner')
             self.DatabaseHandler.Database.Connection.commit()
             self.DatabaseHandler.Database.Init()
-            self.DatabaseHandler.ExploitUpdate()
+            self.DatabaseHandler.Update()
             print '[+] Initialize completed.'
         elif CommandDict[0] == 'update':
-            self.DatabaseHandler.ExploitUpdate()
+            self.DatabaseHandler.Update()
         elif CommandDict[0] == 'backup':
             if len(CommandDict) < 2 :
                 self.HelpController.usage('swepdb_backup')
@@ -503,8 +505,8 @@ class CommandHandler():
                 return
             print '[*] Incoming exploit list.'
             print '[*] Total %s exploit(s).' %(str(len(ExploitList)))
-            print 'NAME                DESCRIPTION'
-            print '----                 -----------'
+            print 'NAME                DESCRIPTION      '
+            print '----                -----------      '
             for item in ExploitList:
                 print item[0].ljust(21, ' ') + item[1]
         except Exception, e:

@@ -36,6 +36,6 @@ class BannerLoader():
     def PrintText(self):
         print '+--------------------------------------------------+'
         print '| SWEP - SWEP the open-Source Web Exploit Project  |'
-        print '| Version 1.0 alpha development                    |'
+        print '| Version 1.0.2 alpha development                  |'
         print '| Welcome, %s|' %(getpass.getuser()).ljust(40, ' ')
         print '+--------------------------------------------------+'

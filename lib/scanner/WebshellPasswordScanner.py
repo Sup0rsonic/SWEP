@@ -4,7 +4,26 @@ import queue
 import threading
 
 
-class exploit():
+def info():
+    info = {
+        'name': 'shell',
+        'path': 'WebshellPasswordScanner',
+        'fullname': 'SHELLBUSTER SWEP COMPATIABLE',
+        'description': 'ShellBuster webshell scanner ver1.0, SWEP compatible',
+        'parameters': {
+            'url': 'Target URL.',
+            'language': '(OPTIONAL) Target language, support php, dotnet, jsp currently. Leave for automatic detection.',
+            'passlist': 'Password list.',
+            'Thread': 'Threads. Default: 50',
+            'Timeout': 'Request timeout. Default: 3'
+        },
+        'author': 'BREACHER security',
+        'date': '2018-12-14'
+    }
+    return info
+
+
+class Scanner():
     def __init__(self):
         self.url = None
         self.language = None
@@ -15,7 +34,7 @@ class exploit():
         self._Queue = queue.Queue()
         pass
 
-    def exploit(self):
+    def Scan(self):
         if not self.url:
             print '[!] Url not specified.'
         elif not self.language:
@@ -73,25 +92,31 @@ class exploit():
         return
 
     def info(self):
-        print """
-        SWEP WEBSHELL PASSWORD SCANNER
-        Author: BREACHER security
-        Description: A simple shell password scanner.
-
-        ARGS                DESCRIPTION
-        ====                ===========
-        url                 Target URL
-        passlist            Password List
-        Threads             Threads, Default: 50
-        Timeout             (OPTIONAL) Request timeout
-        """
+        InformationList = info()
+        args = InformationList['parameters']
+        print '[*] Incoming scanner information:'
+        print '[*] Scanner name: %s' %(InformationList['name'])
+        print ' |   %s' %(InformationList['fullname'])
+        print ' |   Description: %s' %(InformationList['description'])
+        print ' |   Author: %s' %(InformationList['author'])
+        print ' |   Date: %s' %(InformationList['date'])
+        print ' |   Arguments: Total %i' %(len(args))
+        print ' |    |  NAME        DESCRIPTION'
+        print ' |    |  ----        -----------'
+        for item in args.keys():
+            print ' |    |  %s%s' %(item.ljust(12), args[item])
+        print ' |'
+        print '[*] Scanner information end.'
 
 
 if __name__ == '__main__':
-    Session = exploit()
+    Session = Scanner()
     print '[*] Shellbuster 1.0, SWEP Compatible'
     Session.url = raw_input("URL >")
     Session.passlist = raw_input("PASSWORD FILE >")
-    Session.Thread = int(raw_input("THREAD >"))
-    Session.exploit()
+    thread = raw_input("THREAD >")
+    if not thread:
+        thread = 50
+    Session.Thread = thread
+    Session.info()
 

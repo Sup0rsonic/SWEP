@@ -1,5 +1,5 @@
 import requests
-import BeautifulSoup
+import bs4
 import Queue
 import re
 import threading
@@ -55,7 +55,7 @@ class Spider():
     def GetPageUrl(self, page): # Fetch URL from page, Return List.
         UrlList = []
         try:
-            soup = BeautifulSoup.BeautifulSoup(page)
+            soup = bs4.BeautifulSoup(page)
             for item in soup.findAll('a'):
                 UrlList.append(item.get('href').lstrip('/'))
             print '[*] Fetched %s urls.' %(str(len(UrlList)))

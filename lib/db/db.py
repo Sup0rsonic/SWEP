@@ -50,6 +50,7 @@ class DBHandler():
                 self.Session.execute('CREATE TABLE IF NOT EXISTS exploit (name TEXT PRIMARY KEY UNIQUE, description TEXT)')
                 self.Session.execute('CREATE TABLE IF NOT EXISTS sessions (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, date TEXT, info TEXT, buffer TEXT)') # Sessions for re-use. Hosts not included.
                 self.Session.execute('CREATE TABLE IF NOT EXISTS wshell (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, url TEXT, password TEXT, obfs TEXT, info TEXT)')
+                self.Session.execute('CREATE TABLE IF NOT EXISTS scanner (name TEXT PRIMARY KEY UNIQUE, description TEXT, path TEXT)')
                 self.Connection.commit()
             except Exception ,e:
                 print '[!] Error generating database: %s.' %(str(e))
@@ -66,10 +67,6 @@ class DBHandler():
             print '[!] Error execute query %s: %s' %(str(query),str(e))
             resp = None
         return resp
-
-
-    def Fetch(self,array):
-        pass
 
 
     def Exit(self):
