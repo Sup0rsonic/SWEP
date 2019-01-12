@@ -4,18 +4,21 @@
 <img src="https://img.shields.io/badge/license-MIT-lightgreen.svg?style=flat-square"></img><br>
 SWEP is an open-source Web Exploitation Project.
 ## Version
-Ver 1.0.1 development unstable
+Ver 1.0.2 development unstable
 ## Description
 SWEP is an (not very) easy-to-use, user-friendly highly-customizable scanner and web vulnerability exploitation framework.<br>
 This project supports python 2.7<br>
 Requirement:<br>
-requests<br>
-pickie<br>
-sqlite3<br>
-BeautifulSoup4<br>
+> requests<br>
+> pickie<br>
+> sqlite3<br>
+> BeautifulSoup4<br>
 and more.<br>
 ## Usage
-python swep.py<br>
+> git clone https://github.com/Sup0rsonic/SWEP.git<br>
+> pip install -r requirements.txt<br>
+> python swep.py<br>
+And enjoy it =]
 ## Disclaimer
 ###### SWEP and BREACHER security comes with ABSOLUTATLY NO RESPONSIBILITY<br>
 Don't use it to do illegal things. Although we don't really care if you did.<br>
