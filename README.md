@@ -1,7 +1,7 @@
 # SWEP
 ![image](swep.jpg)<br><br>
 ![image](https://img.shields.io/badge/Python-2.7-blue.svg?style=flat-square&logo=python)
-![image](ttps://img.shields.io/badge/license-MIT-lightgreen.svg?style=flat-square)
+![image](https://img.shields.io/badge/license-MIT-lightgreen.svg?style=flat-square)
 ![image](https://img.shields.io/badge/Version-Development-brightgreen.svg?style=flat-square)<br>
 SWEP is an open-source Web Exploitation Project.
 ## Version
