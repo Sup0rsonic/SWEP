@@ -12,7 +12,7 @@ This is NOT a stable version. Use as your own risk.<br>
 Welcome join our development. Contact us with mail above.<br>
 ## Todo
 Intruder framework:<br>
-New spider for intruder<br>
+(COMPLETE) New spider for intruder<br>
 New SQL injection scanner for intruder<br>
 New FTP Bruteforcing tool for intruder<br>
 Logical vulnability scanner for intruder<br>
