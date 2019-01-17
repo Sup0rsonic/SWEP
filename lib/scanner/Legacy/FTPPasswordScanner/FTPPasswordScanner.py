@@ -4,28 +4,6 @@ import ftplib
 import json
 import socket
 
-
-def info():
-    info = {
-        'name': 'ftp',
-        'path': 'FTPPasswordScanner',
-        'fullname': 'SWEP FTP PASSWORD SCANNER',
-        'description': 'FTP weak password scanner',
-        'parameters':{
-            'Url': 'Target URL',
-            'Port': 'Target port, Default: 22',
-            'UsernameFile': '(OPTIONAL) Username file',
-            'PasswordFile': '(OPTIONAL) Password file',
-            'UserPassFile': '(OPTIONAL) Username and password file',
-            'Threads': 'Threads. Default: 10',
-            'Timeout': 'Timeout. Default: 3'
-        },
-        'author': 'BREACHER security',
-        'date': '2019-01-12'
-    }
-    return info
-
-
 class Scanner():
     def __init__(self):
         self.Url = None
@@ -49,7 +27,7 @@ class Scanner():
         self.Threads = int(self.Threads)
         self.Timeout = int(self.Timeout)
         try:
-            while self.queue.qsize() != 0:
+            while not self.queue.not_empty:
                 if self._Counter < self.Threads:
                     self._Counter += 1
                     thread = threading.Thread(target=self.CheckPassword, args=[self.queue.get()])
@@ -114,23 +92,18 @@ class Scanner():
 
 
     def info(self):
-        InformationList = info()
-        args = InformationList['parameters']
-        print '[*] Incoming scanner information:'
-        print '[*] Scanner name: %s' %(InformationList['name'])
-        print ' |   %s' %(InformationList['fullname'])
-        print ' |   Description: %s' %(InformationList['description'])
-        print ' |   Author: %s' %(InformationList['author'])
-        print ' |   Date: %s' %(InformationList['date'])
-        print ' |   Arguments: Total %i' %(len(args))
-        print ' |    |  NAME        DESCRIPTION'
-        print ' |    |  ----        `-----------'
-        for item in args.keys():
-            print ' |    |  %s%s' %(item.ljust(12), args[item])
-        print ' |'
-        print '[*] Scanner information end.'
-
-
-def test():
-    scanner = Scanner()
-    scanner.info()
+        print '''
+        SWEP FTP PASSWORD SCANNER
+        Author: BREACHER security
+        Description: FTP weak password scanner.
+        
+        ARGS                DESCRIPTION
+        ====                ===========
+        Url                 Target URL. e.g: www.test.com
+        Port                Target port. Default: 22
+        UsernameFile        (OPTIONAL) Username File.
+        PasswordFile        (OPTIONAL) Password File.
+        UserPassFile        (OPTIONAL) Username and password file.
+        Threads             Threads. Default: 10
+        Timeout             Timeout. Default       
+        '''

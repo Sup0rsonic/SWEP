@@ -111,7 +111,7 @@ class FingerprintIdentifier():
         TaskList = queue.Queue()
         for item in json:
             TaskList.put(item)
-        while not TaskList.empty():
+        while TaskList.qsize() != 0:
             if self._thread > self._counter:
                 thread = threading.Thread(target=self._HashChecker, args=[TaskList.get()])
                 thread.start()
@@ -229,11 +229,11 @@ class FingerprintIdentifier():
             CMSVersionList = queue.Queue()
             for i in json:
                 CMSVersionList.put(i)
-            while self._counter < self._thread:
-                self._counter += 1
-                thread = threading.Thread(target=self._CheckKeyword,args=(CMSVersionList.get()))
-                thread.setDaemon(True)
-                thread.start()
+            while CMSVersionList.qsize() != 0:
+                if self._counter < self._thread:
+                    self._counter += 1
+                    thread = threading.Thread(target=self._CheckKeyword,args=(CMSVersionList.get()))
+                    thread.start()
         except Exception, e:
             print '[!] Error loading CMS version: %s' %(str(e))
         return

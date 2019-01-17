@@ -3,26 +3,6 @@ import threading
 import requests
 import json
 
-test = 1
-
-def info():
-    info = {
-        'name': 'admin',
-        'path': 'ManagementScanner',
-        'fullname': 'SWEP MANAGEMENT PAGE SCANNER',
-        'description': 'A simple management bruteforcing tool.',
-        'parameters': {
-            'Url': 'Target URL',
-            'Threads': 'Threads. Default: 10',
-            'Timeout': 'Request timeout. Default: 3',
-            'ManagementListFile': '(OPTIONAL) Management page dictionary',
-            'Protocol': 'Protocol. Default: http'
-        },
-        'author': 'BREACHER security',
-        'date': '2019-01-12'
-    }
-    return info
-
 
 class Scanner():
     def __init__(self):
@@ -81,7 +61,7 @@ class Scanner():
         if not ManageUrlList:
             print '[!] Failed to load Management dictionary file, Quitting.'
             return
-        while self.queue.qsize() != 0:
+        while not self.queue.empty():
             try:
                 if self.Threads > self._Counter:
                     self._Counter += 1
@@ -99,24 +79,18 @@ class Scanner():
         ManagementList = self.ScanManagement()
         return ManagementList
 
+
     def info(self):
-        InformationList = info()
-        args = InformationList['parameters']
-        print '[*] Incoming scanner information:'
-        print '[*] Scanner name: %s' %(InformationList['name'])
-        print ' |   %s' %(InformationList['fullname'])
-        print ' |   Description: %s' %(InformationList['description'])
-        print ' |   Author: %s' %(InformationList['author'])
-        print ' |   Date: %s' %(InformationList['date'])
-        print ' |   Arguments: Total %i' %(len(args))
-        print ' |    |  NAME        DESCRIPTION'
-        print ' |    |  ----        `-----------'
-        for item in args.keys():
-            print ' |    |  %s%s' %(item.ljust(12), args[item])
-        print ' |'
-        print '[*] Scanner information end.'
-
-
-def test():
-    scanner = Scanner()
-    scanner.info()
+        print '''
+        SWEP MANAGEMENT SCANNER
+        Author: BREACHER security
+        Description: A simple management bruteforcing tool
+        
+        ARGS                DESCRIPTION
+        ====                ===========
+        Url                 Target URL. e.g: www.test.com
+        Threads             Threads. Default: 10
+        Timeout             Timeout. Default: 3
+        ManagementListFile  (OPTIONAL) Management page dictionary.
+        Protocol            Protocol. Default: http
+        '''

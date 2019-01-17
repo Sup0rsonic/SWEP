@@ -33,7 +33,7 @@ class Spider():
         print '[+] Fetched %s urls from robots.' %(str(len(Robots)))
         UrlList = self.CheckUrlList(UrlList)
         self.UrlList = self.LoadPage(UrlList)
-        while not self.queue.empty():
+        while self.queue.qsize():
             if self._Counter < self.Threads:
                 thread = threading.Thread(target=self.GetPage, args=[self.queue.get()])
                 thread.start()

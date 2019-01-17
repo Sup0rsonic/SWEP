@@ -6,25 +6,6 @@ import queue
 import lib.spider.Spider
 
 
-def info():
-    info = {
-        'name': 'sql',
-        'path': 'SQLInjectionScanner',
-        'fullname': 'SWEP SQL INJECTION SCANNER',
-        'description': 'A simple SQL Injection scanner.',
-        'parameters': {
-            'Url': 'Target URL.',
-            'Threads': 'Threads. Default: 10',
-            'Protocol': 'Protocol. Default: http',
-            'Timeout': 'Request timeout. Default: 3'
-        },
-        'author': 'BERACHER security',
-        'date': '2019-01-12'
-    }
-    return info
-
-
-
 class Scanner():
     def __init__(self):
         self.Url = None
@@ -88,7 +69,7 @@ class Scanner():
             except Exception, e:
                 print '[!] Error generating payload: %s' %(str(e))
         try:
-            while not self.queue.qsize() != 0:
+            while not self.queue.empty():
                 if self.Threads > self._Counter:
                     thread = threading.Thread(target=self.CheckVunerability, args=[self.queue.get()])
                     thread.start()
@@ -147,27 +128,24 @@ class Scanner():
         UrlList = self.CheckSQLInjection()
         return UrlList
 
-
     def info(self):
-        InformationList = info()
-        args = InformationList['parameters']
-        print '[*] Incoming scanner information:'
-        print '[*] Scanner name: %s' %(InformationList['name'])
-        print ' |   %s' %(InformationList['fullname'])
-        print ' |   Description: %s' %(InformationList['description'])
-        print ' |   Author: %s' %(InformationList['author'])
-        print ' |   Date: %s' %(InformationList['date'])
-        print ' |   Arguments: Total %i' %(len(args))
-        print ' |    |  NAME        DESCRIPTION'
-        print ' |    |  ----        `-----------'
-        for item in args.keys():
-            print ' |    |  %s%s' %(item.ljust(12), args[item])
-        print ' |'
-        print '[*] Scanner information end.'
-
+        print '''
+        SWEP SQLi SCANNER
+        Author: BREACHER security
+        Description: A simple SQL Injection scanner.
+        
+        ARGS                DESCRIPTION
+        ====                ===========
+        Url                 Target url. e.g: www.test.com
+        Threads             Threads. Default: 10
+        Protocol            Protocol. Default: http
+        Timeout             (OPTIONAL) Request timeout.
+        '''
 
 
 def test():
     scanner = Scanner()
-    scanner.info()
+    scanner.Url = 'www.katun.me'
+    scanner.Spider.url = 'www.katun.me'
+    scanner.CheckSQLInjection()
 

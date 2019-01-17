@@ -1,0 +1,16 @@
+{
+  "ManageList":
+  [
+    "admin.php",
+    "admin.asp",
+    "admin.jsp",
+    "admin/",
+    "manager.",
+    "manage/",
+    "backoffice/",
+    "login.php",
+    "AdminLogin",
+    "admin_login",
+    "manageoffice"
+  ]
+}
