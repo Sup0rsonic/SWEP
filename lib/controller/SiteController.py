@@ -14,24 +14,8 @@ class site():
         self.port = None
         self.addr = None
         self.cms = {'cms': None, 'version': None, 'website': None}
-        self.whois = {
-            'stored': False,
-            'host': None,
-            'register': None,
-            'createDate': None,
-            'expDate': None,
-            'updateDate': None,
-            'ownerName': None,
-            'ownerCountry': None,
-            'ownerAddr': None,
-            'ownerTelephone':None,
-            'provider': None,
-        }
-        self.information = {
-            'system': None,
-            'db': None,
-            'waf': None
-        }
+        self.information = {'system': None, 'db': None, 'waf': None}
+        self.whois = None
         self.sites = None
         self.subnet = None
         self.FingerprintIdentifier = lib.fingerprint.FingerprintIdentifier.FingerprintIdentifier()
@@ -65,37 +49,14 @@ class site():
         return
 
     def Whois(self):
-        if self.whois['stored']:
-            if raw_input('[*] Previously saved record found. Do you want to refresh it? (Y/N)').upper() != 'Y':
-                print '[+] Whois report for %s: ' %(str(self.url))
-                print 'Host: %s' %(self.url)
-                print 'Registrar: %s' %(self.whois['register'])
-                print 'Creation Date: %s' %(self.whois['createDate'])
-                print 'Registrar Expiry Date: %s' %(self.whois['expDate'])
-                print 'Updated Date: %s' %(str(self.whois['updateDate']))
-                print 'Admin Name: %s' %(str(self.whois['ownerName']))
-                print 'Admin Address: %s' %(str(self.whois['ownerAddr']))
-                print 'Admin Country: %s' %(str(self.whois['ownerCountry']))
-                print 'Admin Phone: %s' %(str(self.whois['ownerTelephone']))
-                print 'Registrar URL: %s' %(str(self.whois['provider']))
-                print '[*] Using saved record, `site update` to clear.'
-            else:
-                self.whois['stored'] = False
-                self.Whois()
-        else:
+        if not self.whois:
             resp = lib.controller.FunctionLib.Whois(self.url)
-            self.whois['host'] = self.url
-            self.whois['stored'] = True
-            self.whois['register'] = re.findall('Registrar: .*', resp)[0]
-            self.whois['createDate'] = re.findall('Creation Date.*', resp)[0]
-            self.whois['expDate'] = re.findall('Registrar Expiry Date.*', resp)[0]
-            self.whois['updateDate'] = re.findall('Updated Date.*',resp)[0]
-            self.whois['ownerName'] = re.findall('Admin Name.*', resp)[0]
-            self.whois['ownerAddr'] = re.findall('Admin Street.*', resp)[0]
-            self.whois['ownerCountry'] = re.findall('Admin Country.*', resp)[0]
-            self.whois['ownerTelephone'] = re.findall('Admin Phone.*', resp)[0]
-            self.whois['provider'] = re.findall('Registrar URL.*', resp)[0]
-            return
+            self.whois = resp
+        else:
+            if raw_input('[*] Previously saved recored found. Do you want to refresh it (Y/N)').upper() != 'Y':
+                print self.whois
+            else:
+                self.whois = lib.controller.FunctionLib.Whois(self.url)
         return
 
     def GetSubnet(self):

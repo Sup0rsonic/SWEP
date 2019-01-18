@@ -18,8 +18,12 @@ def Whois(site):
     try:
         sess.connect(('192.30.45.30',43))
         sess.send(str(site) + '\n')
-        print '[+] Whois report for %s' %(str(site))
         resp = str(sess.recv(10240))
+        if re.findall('No match for %s' %(str(site).upper()), resp):
+            sess.connect(('whois.iana.org', 43))
+            sess.send(str(site) + '\n')
+            resp = str(sess.recv(10240))
+        print '[+] Incoming whois report for %s' %(str(site))
         print resp
     except Exception, e:
         print '[!] Whois query failed, %s' %(str(e))
