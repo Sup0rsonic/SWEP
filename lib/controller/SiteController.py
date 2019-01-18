@@ -13,8 +13,8 @@ class site():
         self.url = None
         self.port = None
         self.addr = None
-        self.cms = {'cms': None, 'version': None, 'website': None}
-        self.information = {'system': None, 'db': None, 'waf': None}
+        self.cms = {'cms': None, 'version': None}
+        self.information = {'system': None, 'db': None, 'waf': None, 'language': None}
         self.whois = None
         self.sites = None
         self.subnet = None
@@ -90,7 +90,7 @@ class site():
             if self.cms[mode]:
                 print '[+] Using stored information.'
                 print '[+] The %s of %s is %s.' %(mode, self.url, self.cms[mode])
-        elif mode in ['system', 'db', 'waf']:
+        elif mode in ['system', 'db', 'waf', 'language']:
             if self.information[mode]:
                 print '[+] Using stored information.'
                 print '[+] The %s of %s is %s.' %(mode, self.url, self.information[mode])
@@ -115,7 +115,7 @@ class site():
                     self.cms['cms'] = self.FingerprintIdentifier.CheckSiteCMS()
                 else:
                     self.cms['version'] = self.FingerprintIdentifier.CheckCMSVersion()
-            elif mode in ['system', 'db', 'waf']:
+            elif mode in ['system', 'db', 'waf', 'language']:
                 if self.information[mode]:
                     if raw_input('[*] Previously saved record found. Do you want to refresh it? (Y/N)').upper() != 'Y':
                         self.GetStoragedInfo(mode)
@@ -124,10 +124,14 @@ class site():
                         self.information[mode] = None
                 if mode == 'system':
                     self.information['system'] = self.FingerprintIdentifier.CheckSystem()
-                elif mode == 'waf':
+                elif mode == 'db':
                     self.information['db'] = self.FingerprintIdentifier.CheckDatabase()
-                else:
+                elif mode == 'waf':
                     self.information['waf'] = self.FingerprintIdentifier.CheckWaf()
+                elif mode == 'language':
+                    self.information['language'] = self.FingerprintIdentifier.CheckSiteLanguage()
+                else:
+                    print '[*] Invalid mode.'
             else:
                 print '[!] Invalid mode.'
         except Exception, e:

@@ -69,12 +69,15 @@ def GetAddr(site):
 def GetPage(site):
     try:
         resp = requests.get('http://%s/' %(site))
-        print '[*] Response Code %s' %(resp.status_code)
-        print '[*] Response Header %s' %(resp.headers)
-        print '[*] Response Body\n %s' %(resp.text)
+        print '[*] Response Code: %s' %(resp.status_code)
+        print '[*] Response Headers: '
+        for item in resp.headers.keys():
+            print '    |  %s: %s' %(item, resp.headers[item])
+        print '[*] Response Body: '
+        print resp.text
     except Exception, e:
         resp = None
-        print '[!] Error1: %s' %str(e)
+        print '[!] Error fetching page: %s' %str(e)
     return resp
 
 

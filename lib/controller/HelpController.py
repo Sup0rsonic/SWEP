@@ -19,7 +19,7 @@ class HelpController():
         elif module == 'whois':
             print '[*] SWEP whois: Check site whois. Usage: whois *args'
         elif module == 'subnet':
-            print '[*] SWEP subnet: Check site subnet. Usage: subnet *args'
+            print '[*] SWEP subnet: Check site subnet. Usage: subnet [c/b] *args'
         elif module == 'addr':
             print '[*] SWEP addr: Get site address. Usage: addr *args'
         elif module == 'database':
@@ -40,6 +40,8 @@ class HelpController():
             print '[*] SWEP CD: So why you can see this?'
         elif module == 'database':
             self.help('database')
+        elif module == 'site':
+            print '[*] SWEP Site Module: site [whois subnet address fingerprint grab exploit check domain help] *args'
         elif module == 'db_search':
             print '[*] SWEP Host Database search: Search host. Usage: database search [keyword]'
         elif module == 'db_load':
@@ -87,12 +89,12 @@ class HelpController():
             print '''
         /////////////////////////////////////////////////////////////
         SWEP site help
-        Usage: site [whois subnet address fingerprint grab exploit check domain help] *args
+        Usage: site [whois subnet [c/b] address fingerprint grab exploit check domain help] *args
         /////////////////////////////////////////////////////////////
         PARAM       DESCRIPTION                     USAGE
         -----       -----------                     -----
         whois       Get whois information.          site whois
-        subnet      Get subnet information.         site subnet
+        subnet      Get subnet information (c/b).   site subnet *args
         address     Get site address.               site address
         fingerprint Get site fingerprint.           site fingerprint
         grab        Grab site homepage.             site grab

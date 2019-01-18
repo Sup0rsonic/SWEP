@@ -10,6 +10,14 @@ import sys
 import urllib2
 import time
 
+
+# Debug options.
+# Make sure you know what are you doing.
+# todo: Change mode after debug
+debug = True
+
+
+
 class FingerprintIdentifier():
     def __init__(self):
         self.site = None
@@ -25,6 +33,8 @@ class FingerprintIdentifier():
         self._thread = 10
         self._CMSVerison = []
         self._ThreadLock = False
+        self._Time = 0
+        self.StopFlag = False
 
 
     def CheckMode(self,mode):
@@ -79,7 +89,7 @@ class FingerprintIdentifier():
 
 
     def CheckSiteCMS(self):
-
+        self.StopFlag = False
         self.SiteLanguage = self.CheckSiteLanguage()
         CMSFingerprints = self.LoadFingerprint()
         CMSList = []
@@ -89,6 +99,12 @@ class FingerprintIdentifier():
         PageList = CMSFingerprints['pages']
         HeaderList = CMSFingerprints['headers']
         try:
+            Timer = threading.Thread(target=self._Timer)
+            Timer.setDaemon(True)
+            Counter = threading.Thread(target=self._ThreadCounter)
+            Counter.setDaemon(True)
+            Timer.start()
+            Counter.start()
             self.CheckHash(HashList)
             self.CheckPage(PageList)
             self.CheckHeader(HeaderList)
@@ -101,9 +117,12 @@ class FingerprintIdentifier():
                     print '[*] How do you see this?' # If you see this, Hello.
             else:
                 print '[*] CMS not found.'
+        except KeyboardInterrupt:
+            print '[*] Stopped.'
         except Exception, e:
             print '[!] Failed to check CMS: %s' %(str(e))
         print '[+] CMS check completed.'
+        self.StopFlag = True
         return
 
 
@@ -111,12 +130,11 @@ class FingerprintIdentifier():
         TaskList = queue.Queue()
         for item in json:
             TaskList.put(item)
-        while not TaskList.empty():
+        while TaskList.qsize():
             if self._thread > self._counter:
+                self._counter += 1
                 thread = threading.Thread(target=self._HashChecker, args=[TaskList.get()])
                 thread.start()
-                if TaskList.empty():
-                    thread.join()
 
 
     def _HashChecker(self, json):
@@ -124,8 +142,11 @@ class FingerprintIdentifier():
             url, cms, hash = json.split('|')
         except Exception, e:
             print '[!] Failed to unpack json: %s' %(str(e))
+            self._counter -= 1
             return
         try:
+            if debug:
+                print '[^] DEBUG: Checked hash %s' %(hash)
             resp = urllib2.urlopen('http://%s/%s' %(self.url, url), timeout=3).read()
             if hashlib.md5(resp).hexdigest() == hash:
                 if cms not in self.CMS:
@@ -135,9 +156,8 @@ class FingerprintIdentifier():
             pass
         except Exception, e:
             print '[!] Failed checking cms: %s' %(str(e))
+        self._counter -= 1
         return
-
-
 
 
     def CheckPage(self,json):
@@ -149,22 +169,18 @@ class FingerprintIdentifier():
                 self._counter += 1
                 thread = threading.Thread(target=self._PageChecker, args=[TaskList.get()])
                 thread.start()
-        while self._ThreadLock:
-            pass
     pass
 
 
     def _PageChecker(self,task):
         try:
             url, cms, code = re.split('\|', task)
-            self._ThreadLock = True
-            if requests.get('http://%s%s' %(self.url, url)).status_code == int(code):
+            if requests.get('http://%s%s' %(self.url, url), timeout=3).status_code == int(code):
                 self.CMS.append(cms)
                 print '[+] Potential CMS of site %s: %s' %(self.url, cms)
         except Exception,e :
             print str(e)
         self._counter -= 1
-        self._ThreadLock = False
         return
 
 
@@ -176,7 +192,6 @@ class FingerprintIdentifier():
             if self._counter < self._thread:
                 self._counter += 1
                 thread = threading.Thread(target=self._HeaderChecker, args=(TaskList.get()))
-                thread.setDaemon(True)
                 thread.start()
         return
 
@@ -184,7 +199,9 @@ class FingerprintIdentifier():
     def _HeaderChecker(self,task):
         try:
             url, cms, header = re.split('\|', task)
-            if re.findall(header, requests.get('http://%s%s' %(self.url, url)).headers):
+            if debug:
+                print '[^] Checked header: %s' %(header)
+            if re.findall(header, requests.get('http://%s%s' %(self.url, url), timeout=3).headers):
                 self.CMS.append(cms)
                 print '[+] Potential CMS of site %s: %s' %(self.url, cms)
         except Exception, e:
@@ -218,9 +235,10 @@ class FingerprintIdentifier():
         if not len(CMSVersionList):
             print '[!] Version check for this cms is not available.'
         for cms in CMSVersionList:
+            if not cms:
+                continue
             CMSVersioNFingerprintList = cms['version']
             thread = threading.Thread(target=self._CMSVersionChecker, args=(CMSVersioNFingerprintList))
-            thread.setDaemon(True)
             thread.start()
         return
 
@@ -242,10 +260,11 @@ class FingerprintIdentifier():
     def _CheckKeyword(self,task):
         version, url, keyword = re.split('\|', task)
         try:
-            if re.findall(keyword, requests.get('http://%s%s' %(self.url, url)).text):
+            if re.findall(keyword, requests.get('http://%s%s' %(self.url, url), timeout=3).text):
                 self._CMSVerison.append(version)
         except Exception, e:
             print '[!] Error checking CMS version: %s' %(str(e))
+        self._counter -= 1
         return
 
 
@@ -254,9 +273,9 @@ class FingerprintIdentifier():
         if not WafList:
             print '[!] Unable to load WAF fingerprint.'
         try:
-            resp = requests.get('http://%s/?union select 1 and 1=2 and updatexml(1,concat(0x7e,(0x23333),0x7e),1) <script>alert(1)</script> {{1+1}}' %(self.url)).text
+            resp = requests.get('http://%s/?union select 1 and 1=2 and updatexml(1,concat(0x7e,(0x23333),0x7e),1) <script>alert(1)</script> {{1+1}}' %(self.url), timeout=3).text
             if not resp:
-                print '[!] Error loading WAF fingerprint.'
+                print '[!] Error fetching page: Empty response.'
                 return
             WafFingerprint = WafList['waf']
             for fingerprint in WafFingerprint:
@@ -296,7 +315,7 @@ class FingerprintIdentifier():
                 sess.settimeout(3)
                 sess.connect((self.site,3306))
                 buf = sess.recv(1024)
-                if buf.find('mariadb'):
+                if re.findall('mariadb', buf, re.I+re.M):
                     self.Database = 'mariadb (open)'
                 else:
                     self.Database = 'mysql (open)'
@@ -310,7 +329,7 @@ class FingerprintIdentifier():
             print '[+] Database type: %s' %(self.Database)
             return self.Database
         try:
-            Headers = requests.get('http://%s/' %(self.site)).headers
+            Headers = requests.get('http://%s/' %(self.site), timeout=3).headers
             RawHeader = ''
             for item in Headers:
                 RawHeader += item
@@ -341,7 +360,7 @@ class FingerprintIdentifier():
         sess = socket.socket(2,1)
         sess.settimeout(3)
         try:
-            Headers = requests.get('http://%s/' %(self.site)).headers
+            Headers = requests.get('http://%s/' %(self.site), timeout=3).headers
             if re.findall('(?i)iis|asp|aspx|windows|\.net|microsoft',str(Headers)):
                 self.OperatingSystem = 'Windows'
             elif re.findall('(?i)Linux|ubuntu|centos|redhat|debian|manjaro|arch|deepin|mint|suse|oracle', str(Headers)):
@@ -361,10 +380,12 @@ class FingerprintIdentifier():
             PortList = {21: '*nix', 3389: 'windows', 445: 'windows', 1433: 'windows'}
             for port in PortList.keys():
                 try:
+                    sess = socket.socket(2,1)
+                    sess.settimeout(3)
                     sess.connect((self.url, port))
                     self.OperatingSystem = PortList[port]
                 except socket.timeout or socket.error:
-                    pass
+                    continue
         except Exception, e:
             print '[!] Error checking system: %s' %(str(e))
             pass
@@ -374,3 +395,13 @@ class FingerprintIdentifier():
         return self.OperatingSystem
 
 
+    def _Timer(self):
+        while True:
+            time.sleep(1)
+            self._Time += 1
+
+
+    def _ThreadCounter(self):
+        while not self.StopFlag: # Nasty hack for unknown bugs. todo: Debug
+            time.sleep(10)
+            print '[*] Fingerprint Identifier: Time: %d second(s), %s thread(s) working.' %(self._Time, self._counter)

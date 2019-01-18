@@ -136,7 +136,7 @@ class CommandHandler():
         return
 
     def _ParmCheck(self, module, parm):
-        if len(parm) != 2:
+        if len(parm) < 2:
             self.HelpController.usage(module)
             return 1
         else:
@@ -161,7 +161,7 @@ class CommandHandler():
         elif CommandDict[0] == 'fingerprint':
             self.Fingerprint(self.site.url)
         elif CommandDict[0] == 'grab':
-            self.grab(self.site)
+            self.grab(self.site.url)
         elif CommandDict[0] == 'exploit':
             if not self.exploit:
                 print '[!] Exploit not select.'
@@ -175,7 +175,7 @@ class CommandHandler():
                 return
             self._CheckSiteInformation(CommandDict[1])
         else:
-            self.HelpController.help('check')
+            self.HelpController.help('site')
         return
 
 
