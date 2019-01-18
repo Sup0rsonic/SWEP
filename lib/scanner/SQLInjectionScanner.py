@@ -53,7 +53,6 @@ class Scanner():
         else:
             PageList = self.Spider.SpiderSite()
         ParmDict = {} # Dict: {url:{arg: val}}
-
         for url in PageList:
             try:
                 url, args = url.split('?')
@@ -144,6 +143,14 @@ class Scanner():
 
 
     def Scan(self):
+        if not self.Url:
+            print '[!] URL not specified.'
+            return
+        if not self.Timeout:
+            print '[*] Timeout not specified, using 3 by default.'
+            self.Timeout = 3
+        else:
+            self.Timeout = int(self.Timeout)
         UrlList = self.CheckSQLInjection()
         return UrlList
 

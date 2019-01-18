@@ -70,69 +70,99 @@ class HelpController():
             pass
         elif module == 'database':
             print '''
-            /////////////////////////////////////////////////////////////
-            SWEP database help
-            Usage: database [search load insert update delete help] *args
-            /////////////////////////////////////////////////////////////
-            PARAM       DESCRIPTION                     USAGE
-            -----       -----------                     -----
-            search      Search session.                 database search [name]
-            load        Load specified session.         database load [sessid]
-            insert      Insert session.                 database insert
-            update      Update session.                 database update [sessid]
-            delete      Delete session.                 database delete [sessid]
-            help        show this help. 
-            '''
+        /////////////////////////////////////////////////////////////
+        SWEP database help
+        Usage: database [search load insert update delete help] *args
+        /////////////////////////////////////////////////////////////
+        PARAM       DESCRIPTION                     USAGE
+        -----       -----------                     -----
+        search      Search session.                 database search [name]
+        load        Load specified session.         database load [sessid]
+        insert      Insert session.                 database insert
+        update      Update session.                 database update [sessid]
+        delete      Delete session.                 database delete [sessid]
+        help        show this help. 
+        '''
         elif module == 'site':
             print '''
-            /////////////////////////////////////////////////////////////
-            SWEP site help
-            Usage: site [whois subnet address fingerprint grab exploit check domain help] *args
-            /////////////////////////////////////////////////////////////
-            PARAM       DESCRIPTION                     USAGE
-            -----       -----------                     -----
-            whois       Get whois information.          site whois
-            subnet      Get subnet information.         site subnet
-            address     Get site address.               site address
-            fingerprint Get site fingerprint.           site fingerprint
-            grab        Grab site homepage.             site grab
-            exploit     Exploit site.                   site exploit
-            check       Check site information.         site check *args
-            domain      Get sites on same host          site domain
-            help        show this help.
-            '''
+        /////////////////////////////////////////////////////////////
+        SWEP site help
+        Usage: site [whois subnet address fingerprint grab exploit check domain help] *args
+        /////////////////////////////////////////////////////////////
+        PARAM       DESCRIPTION                     USAGE
+        -----       -----------                     -----
+        whois       Get whois information.          site whois
+        subnet      Get subnet information.         site subnet
+        address     Get site address.               site address
+        fingerprint Get site fingerprint.           site fingerprint
+        grab        Grab site homepage.             site grab
+        exploit     Exploit site.                   site exploit
+        check       Check site information.         site check *args
+        domain      Get sites on same host          site domain
+        help        show this help.
+        '''
         elif module == 'check':
             print '''
-            /////////////////////////////////////////////////////////////
-            SWEP site CheckModule help
-            Usage: site check [cms version waf language db  update system] *args
-            /////////////////////////////////////////////////////////////
-            PARAM       DESCRIPTION                     USAGE
-            -----       -----------                     -----
-            cms         Check site CMS.                 site check cms
-            version     Get site CMS version.           site check version
-            waf         Check site WAF.                 site check waf
-            language    Get site programming language.  site check language
-            db          Get site database.              site check db
-            update      Update site information.        site check update
-            system      Check site operating system.    site check system
-            help        Show this help
-            '''
+        /////////////////////////////////////////////////////////////
+        SWEP site CheckModule help
+        Usage: site check [cms version waf language db  update system] *args
+        /////////////////////////////////////////////////////////////
+        PARAM       DESCRIPTION                     USAGE
+        -----       -----------                     -----
+        cms         Check site CMS.                 site check cms
+        version     Get site CMS version.           site check version
+        waf         Check site WAF.                 site check waf
+        language    Get site programming language.  site check language
+        db          Get site database.              site check db
+        update      Update site information.        site check update
+        system      Check site operating system.    site check system
+        help        Show this help
+        '''
         elif module == 'swepdb':
             print '''
-            /////////////////////////////////////////////////////////////
-            SWEP SWEPDB help
-            Usage: swepdb [init update backup restore info] *args
-            /////////////////////////////////////////////////////////////
-            PARAM       DESCRIPTION                     USAGE
-            -----       -----------                     -----
-            init        Initialize SWEP Database.       swepdb init
-            update      Update SWEP Database.           swepdb update
-            backup      Backup SWEP Database to file    swepdb backup *args
-            restore     Restore SWEP Database from file swepdb restore *args
-            info        Show SWEP Database info         swepdb info
-            help        Show this help                  swepdb help
-            '''
+        /////////////////////////////////////////////////////////////
+        SWEP SWEPDB help
+        Usage: swepdb [init update backup restore info] *args
+        /////////////////////////////////////////////////////////////
+        PARAM       DESCRIPTION                     USAGE
+        -----       -----------                     -----
+        init        Initialize SWEP Database.       swepdb init
+        update      Update SWEP Database.           swepdb update
+        backup      Backup SWEP Database to file    swepdb backup *args
+        restore     Restore SWEP Database from file swepdb restore *args
+        info        Show SWEP Database info         swepdb info
+        help        Show this help                  swepdb help
+        '''
+        elif module == 'scanner':
+            print '''
+        ////////////////////////////////////////////////////////////
+        SWEP Scanner help
+        Usage: scanner [load unload set unset list interactive scan info help] *args
+        ////////////////////////////////////////////////////////////
+        PARAM       DESCRIPTION                     USAGE
+        -----       -----------                     -----
+        load        Load a scanner.                 scanner load *args
+        unload      Unload a scanner.               scanner unload *args
+        set         Set a argument to value.        scanner set *args
+        unset       Unset a argument.               scanner unset *args
+        list        Show a scanner.                 scanner list
+        interactive Start scanner interactive shell scanner interactive
+        scan        Start scan                      scanner scan
+        info        Show scanner info               scanner info
+        help        Show this help                  scanner help
+        '''
+        elif module == 'help':
+            print '''
+        ////////////////////////////////////////////////////////////
+        SWEP MAIN help
+        Usage: None
+        ////////////////////////////////////////////////////////////
+        Welcome to SWEP Help.
+        Type "help database" to get database help.
+        Type "help check" to get information gathering module help.
+        Type "help database" to get SWEPDB module help.
+        Type "help site" to get scanner module help.
+        '''
         else:
             pass
         pass

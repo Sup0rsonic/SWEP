@@ -33,7 +33,7 @@ class Spider():
         print '[+] Fetched %s urls from robots.' %(str(len(Robots)))
         UrlList = self.CheckUrlList(UrlList)
         self.UrlList = self.LoadPage(UrlList)
-        while not self.queue.empty():
+        while self.queue.qsize() and self._Counter:
             if self._Counter < self.Threads:
                 thread = threading.Thread(target=self.GetPage, args=[self.queue.get()])
                 thread.start()
@@ -57,6 +57,8 @@ class Spider():
         try:
             soup = bs4.BeautifulSoup(page)
             for item in soup.findAll('a'):
+                if not item.get('href'): # I don't know why there's a bug, but it happens. This is the best resolution I think.
+                    continue
                 UrlList.append(item.get('href').lstrip('/'))
             print '[*] Fetched %s urls.' %(str(len(UrlList)))
         except Exception, e:
@@ -119,16 +121,19 @@ class Spider():
     def CheckDuplicate(self, list): # Check urls, feed them into duplicate list.
         UrlList = []
         PageList = []
-        for url in list:
-            PageUrl = url.split('?')[0]
-            if PageUrl not in PageList:
-                PageList.append(PageUrl)
-                pass
-            else:
-                continue
-            if url not in self._DuplicateUrlList:
-                UrlList.append(url)
-                self._DuplicateUrlList.append(url)
+        # for url in list:
+        #     PageUrl = url.split('?')[0]
+        #     if PageUrl not in PageList:
+        #         PageList.append(PageUrl)
+        #         pass
+        #     else:
+        #         continue
+        #     if url not in self._DuplicateUrlList:
+        #         UrlList.append(url)
+        #         self._DuplicateUrlList.append(url)
+        for item in list:
+            if item not in self._DuplicateUrlList:
+                UrlList.append(item)
         return UrlList
 
 

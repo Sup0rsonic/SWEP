@@ -115,7 +115,6 @@ class CommandHandler():
             elif CommandDict[0] == 'scanner':
                 if self._ParmCheck('scanner', CommandDict):
                     return
-                self.HelpController.help('scanner')
                 self.Scan(CommandDict[1])
             elif CommandDict[0] == 'database':
                 if len(CommandDict) < 2:
@@ -128,7 +127,10 @@ class CommandHandler():
                     return
                 self.SWEPdb(CommandDict[1])
             elif CommandDict[0] == 'help':
-                self.HelpController.help('help')
+                if len(CommandDict) == 1 or not CommandDict[1]:
+                    self.HelpController.help('help')
+                    return
+                self.HelpController.help(CommandDict[1])
             else:
                 self._System(CommandDict[0])
         return
@@ -513,3 +515,5 @@ class CommandHandler():
             print '[!] Failed to load from database: %s.' %(str(e))
             print '[*] Fallback to legacy mode.'
             self.ExploitLoader.FindExp(name)
+
+

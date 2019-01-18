@@ -89,11 +89,12 @@ class ScannerController():
             path = self.Database.Query('SELECT path FROM scanner WHERE name="%s"' %(module))[0][0]
             if not path:
                 print '[!] Module not found.'
+                self.LoadLegacy(CommandDict)
             self.Scanner = importlib.import_module('lib.scanner.' + path).Scanner()
             self.Name = self.Scanner.Name
             print '[*] Load complete.'
         except Exception, e:
-            print '[!] Failed to load module %s: %s' %(module, e)
+            print '[!] Failed to load module from database %s: %s' %(module, e)
             print '[*] Falling back to legacy mode.'
             self.LoadLegacy(CommandDict)
         return
@@ -208,8 +209,9 @@ class ScannerController():
             ModuleName = module[0].split(' ')
             if len(ModuleName) != 1:
                 print '[*] help [load unload set unset list interactive scan info help]'
+                return
             else:
-                pass
+                ModuleName = ModuleName[0]
             if ModuleName == 'load':
                 print '[*] load: Load a module.\n   Usage: load [name] e.g: load test'
             elif ModuleName == 'unload':
@@ -227,7 +229,7 @@ class ScannerController():
             elif ModuleName == 'info':
                 print '[*] info: Show module info.'
             elif ModuleName == 'help':
-                print '[*] help: Show help message.\n e.g: help *args'
+                print '[*] help: Show help message. "help help" for argument list.\n    e.g: help *args'
             else:
                 print '[*] help [load unload set unset list interactive scan info help]'
         else:
@@ -266,3 +268,4 @@ class ScannerController():
 
 def test():
     controller = ScannerController()
+    controller.Load('load sql')
