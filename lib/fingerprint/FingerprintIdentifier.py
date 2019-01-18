@@ -14,7 +14,7 @@ import time
 # Debug options.
 # Make sure you know what are you doing.
 # todo: Change mode after debug
-debug = True
+debug = False
 
 
 
