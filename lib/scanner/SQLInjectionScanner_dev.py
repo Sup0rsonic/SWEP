@@ -12,6 +12,7 @@ import time
 # TEST FEATURE:
 # Don't modify this if you didn't read the source.
 # May cause depression, physical harm and death.
+# SHOULD completed.
 # todo: Change mode after development
 dev_mode = True
 
