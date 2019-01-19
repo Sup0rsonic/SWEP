@@ -19,7 +19,7 @@
     "%2522"
   ],
   "keyword":[
-    "ERROR [0-9]{4} \([0-9A-Z]{5}\)",
+    "ERROR [0-9]{4} \\([0-9A-Z]{5}\\)",
     "Database error",
     "You have an error in your SQL syntax",
     "ODBC",
@@ -28,7 +28,7 @@
     "MYSQL ERROR",
     "Failed to connect to database",
     "DB Error",
-    "Connection failed",
+    "Connection failed"
   ],
   "wafkeyword":[
     "Security",

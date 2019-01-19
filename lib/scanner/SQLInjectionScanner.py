@@ -56,15 +56,21 @@ class Scanner():
 
         for url in PageList:
             try:
-                url, args = url.split('?')
-                if args:
-                    parms = args.split('&')
+                UrlList= url.split('?')
+                if len(UrlList) != 1:
+                    url, args = UrlList
                 else:
                     continue
+                parms = args.split('&')
                 if url not in ParmDict.keys():
                     ParmDict[url] = {}
                 for Parm in parms:
-                    arg, val = Parm.split('=')
+                    ArgList = Parm.split('=')
+                    if len(ArgList) > 1:
+                        arg, val = ArgList
+                    else:
+                        arg = ArgList[0]
+                        val = ''
                     if arg not in ParmDict[url].keys():
                         ParmDict[url][arg] = val
                     print lambda args: ParmDict[url]
@@ -96,6 +102,7 @@ class Scanner():
             print '[*] Keyboard interrupt, Quitting.'
         except Exception, e:
             print '[!] Error checking SQL injection: %s' %(str(e))
+        return self.UrlList
 
 
     def GenPayload(self, url, Payloads): # Gen payload: first parm, second parm, both parm
@@ -116,8 +123,7 @@ class Scanner():
         return PayloadDict
 
 
-    def CheckVunerability(self, UrlDict): # Check page keyword, if not then diffrence.
-
+    def CheckVunerability(self, UrlDict): # Check page keyword, if not then difference.
         for raw in UrlDict.keys():
             try:
                 RawResp = requests.get(raw, timeout=self.Timeout).text
@@ -144,8 +150,8 @@ class Scanner():
 
 
     def Scan(self):
-        UrlList = self.CheckSQLInjection()
-        return UrlList
+        self.CheckSQLInjection()
+        return self.UrlList
 
 
     def info(self):
@@ -166,8 +172,9 @@ class Scanner():
         print '[*] Scanner information end.'
 
 
-
 def test():
     scanner = Scanner()
-    scanner.info()
+    scanner.Url = 'www.7mfish.com'
+    scanner.Scan()
 
+test()

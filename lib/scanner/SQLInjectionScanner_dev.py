@@ -48,7 +48,7 @@ class Scanner():
         self.Queue = Queue.Queue()
         self.Differ = difflib.SequenceMatcher()
         self.Status = 'None'
-        self.FuzzDict = json.load(open('SQLiFuzzList.json'))
+        self.FuzzDict = json.load(open('lib/scanner/SQLiFuzzList.json'))
         self.FuzzKeyword = self.FuzzDict['keyword']
         self.LoadKeywordParms()
         self.VulUrlList = []
@@ -90,6 +90,7 @@ class Scanner():
                 print '[+] Check completed, No url found.' # So WTF happend?
         if raw_input('[*] %s pages fetched, Do you want to shrink url list for better speed? (Y/n) ').upper() != 'N':
                 UrlList = self.SimplifyPageList(UrlList)
+        return self.VulUrlList
 
 
     def FetchPageList(self):
@@ -152,9 +153,10 @@ class Scanner():
                     thread.start()
                     self._Counter += 1
         except KeyboardInterrupt:
-            pass
+            print '[*] User stop.'
         except Exception, e:
-            pass
+            print '[!] Failed to check SQL injection: %s' %(str(e))
+
 
     def _SQLInjectionChecker(self, url):
         UrlList = []
@@ -223,4 +225,3 @@ def test():
     print scanner.SimplifyPageList(list)
     return
 
-test()
