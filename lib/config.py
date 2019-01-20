@@ -18,3 +18,7 @@ DatabaseBackupLog = '.swepbackup'
 
 # Whois API: https://jsonwhoisapi.com/
 WhoisApiKey = None
+
+
+# SQLmap path for intruder.
+SQLmapPath = ''
