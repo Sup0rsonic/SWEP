@@ -18,3 +18,7 @@ DatabaseBackupLog = '.swepbackup'
 
 # Whois API: https://jsonwhoisapi.com/
 WhoisApiKey = None
+
+# SQLmap father dir for intruder
+# Absolute path. Tested in Linux but not windows. Good luck.
+SQLmapDir = '/usr/share/'
