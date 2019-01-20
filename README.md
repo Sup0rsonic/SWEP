@@ -1,7 +1,7 @@
 # SWEP
 ![image](swep.jpg)<br><br>
-<img src="https://img.shields.io/badge/Python-2.7-blue.svg?style=flat-square&logo=python"></img>
-<img src="https://img.shields.io/badge/license-MIT-lightgreen.svg?style=flat-square"></img><br>
+![image](https://img.shields.io/badge/Python-2.7-blue.svg?style=flat-square&logo=python)
+![image](https://img.shields.io/badge/license-MIT-lightgreen.svg?style=flat-square)<br>
 SWEP is an open-source Web Exploitation Project.
 ## Version
 Ver 1.0.2 development unstable
@@ -35,7 +35,8 @@ This is a new project and we want you join this project and work together.
 18 Dec, 2018: Updated some exploit.<br>
 29 Dec, 2018: 1.0.1 Released, Added database mechanism.<br>
 1 Jan, 2019: Happy new year!<br>
-12 January, 2019: 1.0.2 Released, Optimzed code, Imporved database mechanism<br>
+12 January, 2019: 1.0.2 Released, Optimzed code, Imporved database mechanism.<br>
+                  New intruder module is under development, Contact <1nt3rcepter@gmail.com> to join.<br>
 ### Release log
 #### 1.0.2
 > Database now supports scanner.<br>
@@ -49,6 +50,6 @@ This is a new project and we want you join this project and work together.
 > New exploit search functions are provided, too. Now you can search through database and switch back to legacy mode when database got an error.<br>
 > Exploit using new format. This is compatiable with database.<br>
 ### Contact us
-Contact us at intercepter@gmail.com 
+Contact us at <intercepter@gmail.com>
 
 BREACHER security
