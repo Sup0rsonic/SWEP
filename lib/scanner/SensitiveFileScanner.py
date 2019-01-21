@@ -36,6 +36,7 @@ class Scanner():
         self.Timeout = 3
         self.Name = 'SensitiveFile'
         self.Path = os.path.dirname(os.path.abspath(__file__))
+        self.ThreadLock = False
         return
 
 
@@ -72,20 +73,36 @@ class Scanner():
             if self.Threads > self._Counter:
                 thread = threading.Thread(target=self.GetPage, args=[self.queue.get()])
                 thread.start()
-        return self.UrlList
+        while not self.ThreadLock:
+            return self.UrlList
+
         
         
     def GetPage(self, url):
+        self.ThreadLock = True # Thread lock for the freaking thread.
+        Url = '%s://%s/%s' % (self.Protocol, self.Url, url)
         try:
-            if requests.get('%s://%s/%s' %(self.Protocol, self.Url, url), timeout=3).status_code != 404:
-                self.UrlList.append(url)
-                print '[+] Sensitive file found at: %s' %('%s://%s/%s' %(self.Protocol, self.Url ,url))
+            resp = requests.get(Url, timeout=int(self.Timeout))
+            if resp.status_code == 302:
+                print '[*] 302 Found found at %s.' %(Url)
+                self.UrlList.append(Url)
+            elif resp.status_code == 403:
+                print '[+] 403 forbidden found at %s.' %(Url)
+                self.UrlList.append(Url)
+            elif resp.status_code == 200:
+                print '[+] HTTP 200 OK found at %s' %(Url)
+                self.UrlList.append(Url)
+            else:
+                pass
         except requests.Timeout:
+            print '[!] Request timeout at %s' %(Url)
             pass
         except requests.ConnectionError:
+            print '[!] Connection failed to %s' %(Url)
             pass
         except Exception, e:
             print '[!] Failed to fetch page: %s' %(str(e))
+        self.ThreadLock = False
         return 
 
 
@@ -93,13 +110,14 @@ class Scanner():
         try:
             if not self.Url:
                 print '[!] Url not specified.'
+                return
             UrlList = self.GetSensitiveFile()
             print '[+] Found %s file:' % (len(UrlList))
             for item in UrlList:
                 print '[+] Sensitive file found: %s' %(item)
         except Exception, e:
             print '[!] Failed to get sensitive file: %s' %(str(e))
-            self.UrlList = None
+            self.UrlList = []
         return self.UrlList
 
     def info(self):
