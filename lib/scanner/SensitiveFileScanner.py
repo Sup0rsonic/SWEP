@@ -69,7 +69,7 @@ class Scanner():
 
     def GetSensitiveFile(self):
         FileList = self.LoadFileList()
-        while self.queue.qsize():
+        while True:
             if self.Threads > self._Counter:
                 thread = threading.Thread(target=self.GetPage, args=[self.queue.get()])
                 thread.start()
