@@ -10,6 +10,7 @@ import lib.db
 import threading
 import lib.fingerprint.FingerprintIdentifier
 import pickle
+import subprocess
 
 # Information gather functions library
 
@@ -136,3 +137,5 @@ def ClassUnseralize(Object):
     return Class
 
 
+def clear():
+    subprocess.call('cls', shell=True) if 'windows' in sys.platform() else subprocess.call('clear', shell=True)
