@@ -165,6 +165,8 @@ class FingerprintIdentifier():
 
     def CheckPage(self,json):
         TaskList = queue.Queue()
+        if not json:
+            return
         for i in json:
             TaskList.put(i)
         while True:
