@@ -37,6 +37,7 @@ This is a new project and we want you join this project and work together.
 1 Jan, 2019: Happy new year!<br>
 12 January, 2019: 1.0.2 Released, Optimzed code, Imporved database mechanism.<br>
                   New intruder module is under development, Contact <1nt3rcepter@gmail.com> to join.<br>
+27 January, 2019: Fixed threading bug
 ### Release log
 #### 1.0.2
 > Database now supports scanner.<br>
