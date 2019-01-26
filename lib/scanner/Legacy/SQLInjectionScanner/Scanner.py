@@ -3,7 +3,7 @@ import re
 import difflib
 import threading
 import queue
-import lib.spider.Spider
+import lib.spider.Spider_bak
 
 
 class Scanner():
@@ -15,7 +15,7 @@ class Scanner():
         self._Ratio = 0.9
         self.Protocol = 'http'
         self.KeywordList = ['w', '\') ','")' , '%23', '--w']
-        self.Spider = lib.spider.Spider.Spider()
+        self.Spider = lib.spider.Spider_bak.Spider()
         self.differ = difflib.SequenceMatcher()
         # self.Spider.url = self.Url
         # self.Spider.Threads = self.Threads

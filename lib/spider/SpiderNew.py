@@ -14,7 +14,8 @@ class Spider():
         self.UrlList = []
         self.Timeout = 1
         self.Queue = queue.Queue()
-        self._Counter = 0
+        self.Status = False
+        self.TaskList = []
         self._ConnErrorCounter = 0
         self._Time = 0
         pass
@@ -61,7 +62,7 @@ class Spider():
             self._ConnErrorCounter += 1
         except requests.Timeout:
             print '[!] Request timeout at %s' %(page)
-        self._Counter -= 1
+        self.TaskList.remove(page)
         return
 
 
@@ -99,15 +100,22 @@ class Spider():
                 return
             UrlList = self.CheckDuplicate(HomepageList)
             CountThread = threading.Thread(target=self.ThreadCounter)
+            self.Status = True
             CountThread.setDaemon(True)
             Timer = threading.Thread(target=self.Timer)
             Timer.setDaemon(True)
             CountThread.start()
             Timer.start()
-            while self.Queue.qsize():
-                if self.Thread > self._Counter:
-                    threading.Thread(target=self.Getpage, args=(self.Queue.get(), )).start()
-                    self._Counter += 1
+            while self.Status:
+                if self.Thread > len(self.TaskList):
+                    Url = self.Queue.get()
+                    thread = threading.Thread(target=self.Getpage ,args=[Url])
+                    thread.start()
+                    self.TaskList.append(Url)
+                    if self.Queue.qsize() == 0 and len(self.TaskList) == 0:
+                        self.Bite()
+                # if self.Status == False:
+                #     continue
             print '[+] Spider completed, total %s page(s) fetched in %s second(s).' %(str(len(self.UrlList)), str(self._Time))
         except KeyboardInterrupt:
             print '[*] Spider stop, total %s page(s) fetched in %s second(s).' %(str(len(self.UrlList)), str(self._Time))
@@ -118,20 +126,32 @@ class Spider():
 
 
     def ThreadCounter(self):
-        while True:
+        while self.Status:
             time.sleep(3)
-            print '[*] Current thread: %s, %s page(s) left.' %(str(self._Counter), str(self.Queue.qsize()))
-        pass
+            print '[*] Current thread: %s, %s page(s) left.' %(str(len(self.TaskList)), str(self.Queue.qsize()))
+        return
 
 
     def Timer(self):
-        while True:
+        while self.Status:
             time.sleep(1)
             self._Time += 1
         pass
+
+
+    def Bite(self):
+        print '[*] Watchdog bite.'
+        for item in self.TaskList:
+            self.TaskList.pop()
+        while self.Queue.qsize():
+            self.Queue.get()
+        self.Status = False
+        return
 
 
 def test():
     spider = Spider()
     spider.Url = 'www.phpcms.cn'
     spider.SpiderSite()
+
+test()

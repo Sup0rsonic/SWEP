@@ -63,3 +63,7 @@ class Intruder():
 
     def ShowStatus(self):
         pass
+
+
+    def PrintStatus(self):
+        pass

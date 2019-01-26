@@ -1,5 +1,5 @@
 import lib.spider.SpiderNew
-import lib.spider.Spider
+import lib.spider.Spider_bak
 import re
 import requests
 import difflib
@@ -14,7 +14,7 @@ import time
 # May cause depression, physical harm and death.
 # SHOULD completed.
 # todo: Change mode after development
-dev_mode = True
+dev_mode = False
 
 
 def info():
@@ -55,7 +55,7 @@ class Scanner():
         if dev_mode:
             self.Spider = lib.spider.SpiderNew.Spider()
         else:
-            self.Spider = lib.spider.Spider.Spider()
+            self.Spider = lib.spider.Spider_bak.Spider()
         pass
 
 
@@ -208,6 +208,24 @@ class Scanner():
         NewList = dict
         NewList.sort()
         return NewList
+
+
+    def info(self):
+        InformationList = info()
+        args = InformationList['parameters']
+        print '[*] Incoming scanner information:'
+        print '[*] Scanner name: %s' %(InformationList['name'])
+        print ' |   %s' %(InformationList['fullname'])
+        print ' |   Description: %s' %(InformationList['description'])
+        print ' |   Author: %s' %(InformationList['author'])
+        print ' |   Date: %s' %(InformationList['date'])
+        print ' |   Arguments: Total %i' %(len(args))
+        print ' |    |  NAME        DESCRIPTION'
+        print ' |    |  ----        `-----------'
+        for item in args.keys():
+            print ' |    |  %s%s' %(item.ljust(12), args[item])
+        print ' |'
+        print '[*] Scanner information end.'
 
 
 def test():

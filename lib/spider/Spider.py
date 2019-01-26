@@ -1,173 +1,163 @@
 import requests
-import bs4
-import Queue
-import re
+import queue
 import threading
+import bs4
+import re
+import time
+
+
+# Hope this work. No more bugs. God bless me. Ramen.
+# Hope this work. No more bugs. God bless me. Ramen.
+# Hope this work. No more bugs. God bless me. Ramen.
+
+
+debug = True
 
 
 class Spider():
     def __init__(self):
-        self.url = None
-        self._WebRootPage = None
-        self.UrlList = []
-        self._ParmList = {}
-        self._DuplicateUrlList = []
-        self.Threads = 10
-        self._Counter = 0
+        self.Url = None
         self.Protocol = 'http'
-        self.queue = Queue.Queue()
+        self.Thread = 10
+        self.Timeout = 3
+        self.Queue = queue.Queue()
+        self.Status = False
+        self.TaskList = []
+        self.DuplicateUrl = []
+        self.UrlList = []
+        self.Time = 0
+        pass
 
 
     def SpiderSite(self):
-        if self.url:
+        try:
+            if not self.Url:
+                print '[!] URL not spcified.'
+                return
             if not self.Protocol:
-                print '[!] Protocol not specified, using HTTP by default.'
                 self.Protocol = 'http'
-            self._WebRootPage = '%s://%s/' %(self.Protocol, self.url)
-        else:
-            print '[!] Error getting site: URL not specified.'
-        UrlList = self.GetHomepage()
-        Robots = self.GetRobots()
-        for url in Robots:
-            UrlList.append(url)
-        print '[+] Fetched %s urls from robots.' %(str(len(Robots)))
-        UrlList = self.CheckUrlList(UrlList)
-        self.UrlList = self.LoadPage(UrlList)
-        while self.queue.qsize():
-            if self._Counter < self.Threads:
-                thread = threading.Thread(target=self.GetPage, args=[self.queue.get()])
-                thread.start()
-                self._Counter += 1
+            if not self.Thread:
+                self.Thread = 10
+            if not self.Timeout:
+                self.Timeout = 3
+            self.GetHomepage()
+            time.sleep(1)
+            watcher = threading.Thread(target=self.ThreadWatcher)
+            watcher.setDaemon(True)
+            timer = threading.Thread(target=self.Timer)
+            timer.setDaemon(True)
+            watchdog = threading.Thread(target=self.Watchdog)
+            watchdog.setDaemon(True)
+            self.Status = True
+            timer.start()
+            watcher.start()
+            watchdog.start()
+            while self.Status:
+                if int(self.Thread) > len(self.TaskList):
+                    Url = self.Queue.get()
+                    thread = threading.Thread(target=self.GetPage, args=[Url])
+                    thread.start()
+                    time.sleep(0.3)
+                    self.TaskList.append(thread)
+        except Exception, e:
+            print '[!] Failed to spider site: %s' %(str(e))
+        except KeyboardInterrupt:
+            print '[*] User stop.'
+        print '[+] Spider completed.'
+        print '[+] Incoming URL list: '
+        for item in self.UrlList:
+            print ' |    | %s' %(item)
+        print '[+] Fetch completed.'
         return self.UrlList
 
 
     def GetHomepage(self):
         try:
-            resp = requests.get(self._WebRootPage).text
-            UrlList = self.GetPageUrl(resp)
-            UrlList = self.CheckUrlList(UrlList)
-        except Exception, e:
-            print '[!] Error getting homepage: %s' %(str(e))
-            UrlList = ''
-        return UrlList
+            resp = requests.get('%s://%s/' %(self.Protocol, self.Url), timeout=self.Timeout).text
+            UrlList = self.CheckUrlList(resp)
+            UrlList = self.ListUpdate(UrlList)
+        except requests.Timeout:
+            print '[!] Timed out fetching homepage.'
+        except requests.ConnectionError:
+            print '[!] Failed to connect to server.'
+        except Exception ,e:
+            print '[!] Failed to fetch url: %s' %(str(e))
+        return
 
 
-    def GetPageUrl(self, page): # Fetch URL from page, Return List.
+    def CheckUrlList(self, text):
+        soup = bs4.BeautifulSoup(text)
+        a = soup.findAll('a')
         UrlList = []
-        try:
-            soup = bs4.BeautifulSoup(page)
-            for item in soup.findAll('a'):
-                UrlList.append(item.get('href').lstrip('/'))
-            print '[*] Fetched %s urls.' %(str(len(UrlList)))
-        except Exception, e:
-            print '[!] Error fetching url: %s.' %(str(e))
-        return UrlList
-
-
-
-    def CheckUrl(self, url): # Get string URL, Check avilable URL, Return a url.
-        try:
-            if re.findall(r'^(?![/]{2}|http[s]?://).*', url):
-                pass
-            else:
-                if re.findall(self.url, url):
-                    url = re.sub('^([/]{2}|http[s]?://)%s' % (self.url.replace('.', '\.')), '', url)
-                    url = url.lstrip('/')
-                else:
-                    url = None
-            if url:
-                if re.findall('\.jpg|\.gif|\.jpeg|\.js|\.pdf|\.doc|\.png|\.bmp|\.css|\.xml|\.xls|\.json|\.ppt|\.psd', url):
-                    url = None
-        except Exception, e:
-            print '[!] Error checking url: %s, resuming next' %(str(e))
-            url = None
-        return url
-
-
-
-    def GetPage(self, url): # Fetch page.
-        try:
-            resp = requests.get(self._WebRootPage+url).text
-            UrlList = self.GetPageUrl(resp)
-            UrlList = self.CheckUrlList(UrlList)
-            self.LoadPage(UrlList)
-        except Exception, e:
-            print '[!] Error getting page: %s' %(str(e))
-            UrlList = []
-        self._Counter -= 1
-        return UrlList
-
-
-    def CheckUrlList(self, UrlList): # Get a literable list, Check availability, Return a list.
-        NewUrlList = []
-        for url in UrlList:
-            url = self.CheckUrl(url)
-            if url and url != u'#' and url != u'':
-                NewUrlList.append(url)
-        return NewUrlList
-
-
-    def LoadPage(self, page): # Load pages without other actions but check duplicate and store into queue and urllist
-        NewUrlList = []
-        UrlList = self.CheckDuplicate(page)
-        for page in UrlList:
-            self.queue.put(page)
-            NewUrlList.append(page)
-        return NewUrlList
-
-
-    def CheckDuplicate(self, list): # Check urls, feed them into duplicate list.
-        UrlList = []
-        PageList = []
-        for url in list:
-            PageUrl = url.split('?')[0]
-            if PageUrl not in PageList:
-                PageList.append(PageUrl)
-                pass
-            else:
+        if not a:
+            return
+        for item in a:
+            Url = item.get('href')
+            if not Url:
                 continue
-            if url not in self._DuplicateUrlList:
-                UrlList.append(url)
-                self._DuplicateUrlList.append(url)
+            if self.Url not in Url:
+                if not Url.startswith('http'):
+                    if not Url.startswith('//'):
+                        UrlList.append('%s://%s/%s' %(self.Protocol, self.Url, Url))
+            else:
+                if Url.startswith('http'):
+                    UrlList.append(Url)
+                if Url.startswith('//'):
+                    UrlList.append('%s:%s' %(self.Protocol, Url))
         return UrlList
 
 
-    def GetRobots(self):
-        UrlList = []
-        try:
-            resp = requests.get(self._WebRootPage).text
-            UrlList = re.findall('[Aa]?llow: /(.*)$', resp)
-        except Exception, e:
-            print '[!] Failed to fetch robots: %s' %(str(e))
+    def ListUpdate(self, UrlList): # Update list.
+        for item in UrlList:
+            if item not in self.UrlList:
+                print '[*] Fetched: %s' % (item)
+                self.Queue.put(item)
+                self.UrlList.append(item)
         return UrlList
 
-    def CheckParms(self): # Check pages, fetch parms, stat parms, return in a dict. dict will be like # List format: {url:{parm:val}}
-        ParmDict = {}
+
+    def GetPage(self, Url):
         try:
-            for url in self.UrlList:
-                url, parm = re.split('\?', url)
-                if url == u'' or '' or None:
-                    url = '/'
-                if '&' in parm:
-                    parmList = parm.split('&')
-                else:
-                    continue
-                for parm in parmList:
-                    param, value = parm.split('=')
-                    if url not in ParmDict:
-                        ParmDict[url] = {}
-                    if not ParmDict[url].has_key(param):
-                        ParmDict[url][param] = value
-                print ParmDict
-                return
+            resp = requests.get(Url ,timeout=self.Timeout).text
+            UrlList = self.CheckUrlList(resp)
+            self.ListUpdate(UrlList)
+        except requests.Timeout:
+            print '[!] Request timeout fetching %s' %(Url)
+        except requests.ConnectionError:
+            print '[!] Failed to connect to server.'
         except Exception, e:
-            print '[!] Error checking parameter: %s.' %(e)
+            print '[!] Failed to fetch a url: %s' %(str(e))
+        return
+
+
+    def ThreadWatcher(self):
+        while self.Status:
+            time.sleep(5)
+            print '[*] Thread(s): %s, %s page(s) left, costs %s second(s).' %(len(self.TaskList), self.Queue.qsize(), self.Time)
+        return
+
+
+    def Timer(self):
+        while self.Status:
+            time.sleep(1)
+            self.Time += 1
+        return
+
+
+    def Watchdog(self):
+        time.sleep(1)
+        while self.Status:
+            if len(self.TaskList) == 0 and self.Queue.qsize() == 0:
+                self.Status = False
+            for item in self.TaskList:
+                if not item.isAlive():
+                    self.TaskList.remove(item)
 
 
 def test():
     spider = Spider()
-    spider.url = 'www.katun.me'
-    UrlList = spider.SpiderSite()
-    print '*' + '-' * 30 + '*'
-    for url in UrlList:
-        print '[+] Fetched: %s' %(str(url))
+    spider.Url = 'www.phpcms.cn'
+    spider.SpiderSite()
+
+
+test()

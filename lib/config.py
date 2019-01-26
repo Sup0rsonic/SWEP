@@ -21,4 +21,7 @@ WhoisApiKey = None
 
 # SQLmap father dir for intruder
 # Absolute path. Tested in Linux but not windows. Good luck.
-SQLmapDir = '/usr/share/'
+SQLMapFatherDir = ''
+SQLmapFileDir = ''
+SQLmapHost = 'localhost'
+SQLmapPort = 8775
