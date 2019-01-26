@@ -2,6 +2,7 @@ import queue
 import threading
 import requests
 import json
+import time
 
 test = 1
 
@@ -30,7 +31,10 @@ class Scanner():
         self.Threads = 10
         self._Counter = 0
         self.UrlList = []
-        self.queue = queue.Queue()
+        self.Queue = queue.Queue()
+        self.TaskList = []
+        self.Status = True
+        self.Time = 0
         self.ManageListFile = None
         self.Protocol = 'http'
         self.Name = 'Management Page'
@@ -46,7 +50,7 @@ class Scanner():
             ManageUrlList = RawManageJson['ManageList']
             ManageUrlList = self.RemoveDuplicate(ManageUrlList)
             for Url in ManageUrlList:
-                self.queue.put(Url)
+                self.Queue.put(Url)
             print '[*] Dictionary load completed, Total %s url(s).' %(len(ManageUrlList))
         except Exception, e:
             print '[!] Failed to load dictionary: %s' %(str(e))
@@ -81,12 +85,26 @@ class Scanner():
         if not ManageUrlList:
             print '[!] Failed to load Management dictionary file, Quitting.'
             return
-        while self.queue.qsize() != 0:
+        self.Status = True
+        timer = threading.Thread(target=self.Timer)
+        timer.setDaemon(True)
+        checker = threading.Thread(target=self.ThreadChecker)
+        checker.setDaemon(True)
+        statchecker = threading.Thread(target=self.StatChecker)
+        statchecker.setDaemon(True)
+        statchecker.start()
+        checker.start()
+        timer.start()
+        while True:
             try:
-                if self.Threads > self._Counter:
+                if self.Threads > len(self.TaskList):
                     self._Counter += 1
-                    thread = threading.Thread(target=self.GetPage, args=[self.queue.get()])
+                    thread = threading.Thread(target=self.GetPage, args=[self.Queue.get()])
+                    self.TaskList.append(thread)
                     thread.start()
+                    time.sleep(0.32) # Fuck race competition. I'm sick of this.
+                if not self.Status:
+                    break
             except KeyboardInterrupt:
                 print '[*] Keyboard interrupt, Quitting.'
             except Exception, e:
@@ -117,6 +135,37 @@ class Scanner():
         print '[*] Scanner information end.'
 
 
+
+    def Timer(self):
+        while self.Status:
+            time.sleep(1)
+            self.Time += 1
+
+
+
+    def ThreadChecker(self):
+        time.sleep(1)
+        while True:
+            for item in self.TaskList:
+                if not item.isAlive():
+                    self.TaskList.remove(item)
+            if not self.Queue.qsize() and len(self.TaskList) == 0:
+                self.Status = False
+                break
+
+
+
+    def StatChecker(self):
+        while self.Status:
+            time.sleep(5)
+            print '[*] %s thread running, %s item left, cost %s seconds' %(str(len(self.TaskList)), str(self.Queue.qsize()), self.Time)
+
+
+
+
 def test():
     scanner = Scanner()
-    scanner.info()
+    scanner.Url = 'www.7mfish.com'
+    scanner.Scan()
+
+test()

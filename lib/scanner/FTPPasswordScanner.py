@@ -3,6 +3,7 @@ import queue
 import ftplib
 import json
 import socket
+import time
 
 
 def info():
@@ -37,8 +38,12 @@ class Scanner():
         self.Threads = 10
         self._Counter = 0
         self.Timeout = 3
+        self.Time = 0
+        self.Status = False
         self.UserPassList = []
-        self.queue =queue.Queue()
+        self.TaskList = []
+        self.Status = True
+        self.Queue =queue.Queue()
         self.Name = 'FTP Password'
 
 
@@ -48,12 +53,25 @@ class Scanner():
         self.port = int(self.port)
         self.Threads = int(self.Threads)
         self.Timeout = int(self.Timeout)
+        self.Status = True
+        timer = threading.Thread(target=self.Timer)
+        timer.setDaemon(True)
+        checker = threading.Thread(target=self.ThreadChecker)
+        checker.setDaemon(True)
+        statchecker = threading.Thread(target=self.StatChecker)
+        statchecker.setDaemon(True)
+        statchecker.start()
+        checker.start()
+        timer.start()
         try:
-            while self.queue.qsize() != 0:
-                if self._Counter < self.Threads:
-                    self._Counter += 1
-                    thread = threading.Thread(target=self.CheckPassword, args=[self.queue.get()])
+            while True:
+                if not self.Status:
+                    break
+                if len(self.TaskList) < self.Threads:
+                    thread = threading.Thread(target=self.CheckPassword, args=[self.Queue.get()])
                     thread.start()
+                    self.TaskList.append(thread)
+                    time.sleep(0.3)
         except KeyboardInterrupt:
             print '[*] Keyboard interrupt: Quitting.'
             return
@@ -82,8 +100,8 @@ class Scanner():
         PasswordList = self.RemoveDuplicate(PasswordList)
         for username in UsernameList:
             for password in PasswordList:
-                self.queue.put('%s:%s') %(username, password)
-        print '[+] Dictionary load completed, Total %s user-pass pairs.' %(str(self.queue.qsize()))
+                self.Queue.put('%s:%s') %(username, password)
+        print '[+] Dictionary load completed, Total %s user-pass pairs.' %(str(self.Queue.qsize()))
 
 
     def CheckPassword(self, credential):
@@ -113,6 +131,30 @@ class Scanner():
         return FTPPasswordList
 
 
+    def Timer(self):
+        while self.Status:
+            time.sleep(1)
+            self.Time += 1
+
+
+    def StatChecker(self):
+        while self.Status:
+            time.sleep(5)
+            print '[*] %s thread running, %s item left, cost %s seconds' %(str(len(self.TaskList)), str(self.Queue.qsize()), self.Time)
+
+
+
+    def ThreadChecker(self):
+        while self.Status:
+            time.sleep(1)
+            for item in self.TaskList:
+                if not item.isAlive():
+                    self.TaskList.remove(item)
+            if not self.Queue.qsize() and len(self.TaskList) == 0:
+                self.Status = False
+
+
+
     def info(self):
         InformationList = info()
         args = InformationList['parameters']
@@ -134,3 +176,5 @@ class Scanner():
 def test():
     scanner = Scanner()
     scanner.info()
+
+test()
