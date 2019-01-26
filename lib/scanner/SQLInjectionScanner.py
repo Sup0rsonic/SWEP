@@ -87,10 +87,13 @@ class Scanner():
             except Exception, e:
                 print '[!] Error generating payload: %s' %(str(e))
         try:
-            while not self.queue.empty():
+            while True:
                 if self.Threads > self._Counter:
                     thread = threading.Thread(target=self.CheckVunerability, args=[self.queue.get()])
                     thread.start()
+                    if self.queue.qsize() == 0:
+                        thread.join()
+                        break
         except KeyboardInterrupt:
             print '[*] Keyboard interrupt, Quitting.'
         except Exception, e:
@@ -176,5 +179,6 @@ class Scanner():
 
 def test():
     scanner = Scanner()
-    scanner.info()
+    scanner.Url = 'www.7mfish.com'
+    scanner.Scan()
 

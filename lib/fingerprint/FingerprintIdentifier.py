@@ -164,11 +164,14 @@ class FingerprintIdentifier():
         TaskList = queue.Queue()
         for i in json:
             TaskList.put(i)
-        while not TaskList.empty():
+        while True:
             if self._counter < self._thread:
                 self._counter += 1
                 thread = threading.Thread(target=self._PageChecker, args=[TaskList.get()])
                 thread.start()
+                if not TaskList.qsize():
+                    thread.join()
+                    break
     pass
 
 

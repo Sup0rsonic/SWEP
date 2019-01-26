@@ -32,12 +32,11 @@ class Scanner():
         self._Counter = 0
         self.UrlList = []
         self.Queue = queue.Queue()
-        self.TaskList = []
-        self.Status = True
         self.Time = 0
         self.ManageListFile = None
         self.Protocol = 'http'
         self.Name = 'Management Page'
+        self.TaskList = []
         self.Timeout = 3
         pass
 
@@ -86,25 +85,16 @@ class Scanner():
             print '[!] Failed to load Management dictionary file, Quitting.'
             return
         self.Status = True
-        timer = threading.Thread(target=self.Timer)
-        timer.setDaemon(True)
-        checker = threading.Thread(target=self.ThreadChecker)
-        checker.setDaemon(True)
-        statchecker = threading.Thread(target=self.StatChecker)
-        statchecker.setDaemon(True)
-        statchecker.start()
-        checker.start()
-        timer.start()
         while True:
             try:
-                if self.Threads > len(self.TaskList):
+                if self.Threads > self._Counter:
                     self._Counter += 1
                     thread = threading.Thread(target=self.GetPage, args=[self.Queue.get()])
                     self.TaskList.append(thread)
-                    thread.start()
-                    time.sleep(0.32) # Fuck race competition. I'm sick of this.
-                if not self.Status:
-                    break
+                    thread.start() # Fuck race competition. I'm sick of this.
+                    if not self.Queue.qsize():
+                        thread.join()
+                        break
             except KeyboardInterrupt:
                 print '[*] Keyboard interrupt, Quitting.'
             except Exception, e:
@@ -136,36 +126,8 @@ class Scanner():
 
 
 
-    def Timer(self):
-        while self.Status:
-            time.sleep(1)
-            self.Time += 1
-
-
-
-    def ThreadChecker(self):
-        time.sleep(1)
-        while True:
-            for item in self.TaskList:
-                if not item.isAlive():
-                    self.TaskList.remove(item)
-            if not self.Queue.qsize() and len(self.TaskList) == 0:
-                self.Status = False
-                break
-
-
-
-    def StatChecker(self):
-        while self.Status:
-            time.sleep(5)
-            print '[*] %s thread running, %s item left, cost %s seconds' %(str(len(self.TaskList)), str(self.Queue.qsize()), self.Time)
-
-
-
-
 def test():
     scanner = Scanner()
     scanner.Url = 'www.7mfish.com'
     scanner.Scan()
 
-test()

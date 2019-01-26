@@ -54,13 +54,19 @@ class Spider():
             timer.start()
             watcher.start()
             watchdog.start()
-            while self.Status:
+            while True:
                 if int(self.Thread) > len(self.TaskList):
                     Url = self.Queue.get()
                     thread = threading.Thread(target=self.GetPage, args=[Url])
                     thread.start()
-                    time.sleep(0.3)
                     self.TaskList.append(thread)
+                    if not self.Queue.qsize():
+                        thread.join()
+                    if not self.Queue.qsize():
+                        print '[*] No URL left, synchronizing tasks.'
+                        time.sleep(3)
+                if not self.Status:
+                    break
         except Exception, e:
             print '[!] Failed to spider site: %s' %(str(e))
         except KeyboardInterrupt:
@@ -148,9 +154,10 @@ class Spider():
 
     def Watchdog(self):
         time.sleep(1)
-        while self.Status:
+        while True:
             if len(self.TaskList) == 0 and self.Queue.qsize() == 0:
                 self.Status = False
+                break
             for item in self.TaskList:
                 if not item.isAlive():
                     self.TaskList.remove(item)
@@ -158,5 +165,7 @@ class Spider():
 
 def test():
     spider = Spider()
-    spider.Url = 'www.phpcms.cn'
+    spider.Url = 'www.jtceramic.com'
     spider.SpiderSite()
+
+test()

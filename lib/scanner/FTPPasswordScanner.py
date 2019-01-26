@@ -72,6 +72,8 @@ class Scanner():
                     thread.start()
                     self.TaskList.append(thread)
                     time.sleep(0.3)
+                if not self.Status:
+                    break
         except KeyboardInterrupt:
             print '[*] Keyboard interrupt: Quitting.'
             return
@@ -145,13 +147,14 @@ class Scanner():
 
 
     def ThreadChecker(self):
-        while self.Status:
+        while True:
             time.sleep(1)
             for item in self.TaskList:
                 if not item.isAlive():
                     self.TaskList.remove(item)
             if not self.Queue.qsize() and len(self.TaskList) == 0:
                 self.Status = False
+                break
 
 
 
@@ -177,4 +180,3 @@ def test():
     scanner = Scanner()
     scanner.info()
 
-test()

@@ -57,11 +57,14 @@ class Scanner():
         except Exception, e:
             print '[!] Failed to load password list: %s' % (str(e))
         try:
-            while not self._Queue.qsize() != 0:
+            while True:
                 if self.Thread > self._Counter:
                     try:
                         thread = threading.Thread(target=self.CheckPassword, args=(self.language, self._Queue.get()))
                         thread.start()
+                        if self._Queue.qsize() == 0:
+                            thread.join()
+                            break
                     except Exception, e:
                         print '[!] Failed to start a thread: %s' % (str(e))
         except Exception, e:

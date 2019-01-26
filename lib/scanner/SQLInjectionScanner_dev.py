@@ -160,11 +160,14 @@ class Scanner():
         timer.start()
         counter.start()
         try:
-            while self.Queue.qsize() != 0:
+            while True:
                 if self._Counter < self.Thread:
                     thread = threading.Thread(target=self._SQLInjectionChecker, args=[self.Queue.get()])
                     thread.start()
                     self._Counter += 1
+                    if not self.Queue.qsize():
+                        thread.join()
+                        break
         except KeyboardInterrupt:
             print '[*] User stop.'
         except Exception, e:
@@ -207,7 +210,7 @@ class Scanner():
 
 
     def _Timer(self):
-        while True:
+        while self.Stat:
             time.sleep(1)
             self.Timer += 1
 
@@ -216,7 +219,6 @@ class Scanner():
         while self.Stat:
             time.sleep(10)
             print '[*] Used %s seconds, %s page(s) total, %s vulnerable page(s) found, %s pages left.' %(str(self.Timer), str(self.UrlCount), str(len(self.VulUrlList)), str(self.Queue.qsize()))
-
 
 
     def SortNew(self, dict):

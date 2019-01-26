@@ -73,13 +73,15 @@ class Scanner():
             if self.Threads > self._Counter:
                 thread = threading.Thread(target=self.GetPage, args=[self.queue.get()])
                 thread.start()
+                if not self.queue.qsize():
+                    thread.join()
+                    break
         while not self.ThreadLock:
             return self.UrlList
 
         
         
     def GetPage(self, url):
-        self.ThreadLock = True # Thread lock for the freaking thread.
         Url = '%s://%s/%s' % (self.Protocol, self.Url, url)
         try:
             resp = requests.get(Url, timeout=int(self.Timeout))
@@ -102,7 +104,6 @@ class Scanner():
             pass
         except Exception, e:
             print '[!] Failed to fetch page: %s' %(str(e))
-        self.ThreadLock = False
         return 
 
 
@@ -140,4 +141,7 @@ class Scanner():
 
 def test():
     scanner = Scanner()
-    scanner.info()
+    scanner.Url = 'www.7mfish.com'
+    scanner.Scan()
+
+test()
