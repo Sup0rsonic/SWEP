@@ -62,7 +62,7 @@ class Scanner():
                     try:
                         thread = threading.Thread(target=self.CheckPassword, args=(self.language, self._Queue.get()))
                         thread.start()
-                        if self._Queue.qsize() == 0:
+                        if not self._Queue.qsize():
                             thread.join()
                             break
                     except Exception, e:

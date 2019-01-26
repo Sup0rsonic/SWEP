@@ -229,7 +229,7 @@ class Scanner():
 
 def test():
     scanner = Scanner()
-    scanner.Url = 'www.katun.me'
+    scanner.Url = None
     scanner.Scan()
     return
 

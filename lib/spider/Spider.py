@@ -2,8 +2,6 @@ import requests
 import queue
 import threading
 import bs4
-import Queue
-import re
 import time
 
 
@@ -168,4 +166,3 @@ def test():
     spider.Url = 'www.jtceramic.com'
     spider.SpiderSite()
 
-test()

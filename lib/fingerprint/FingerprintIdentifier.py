@@ -123,18 +123,21 @@ class FingerprintIdentifier():
             print '[!] Failed to check CMS: %s' %(str(e))
         print '[+] CMS check completed.'
         self.StopFlag = True
-        return
+        return self.CMS
 
 
     def CheckHash(self, json):
         TaskList = queue.Queue()
         for item in json:
             TaskList.put(item)
-        while TaskList.qsize():
+        while True:
             if self._thread > self._counter:
                 self._counter += 1
                 thread = threading.Thread(target=self._HashChecker, args=[TaskList.get()])
                 thread.start()
+                if not TaskList.qsize():
+                    thread.join()
+                    break
 
 
     def _HashChecker(self, json):

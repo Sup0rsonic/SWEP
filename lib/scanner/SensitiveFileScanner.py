@@ -141,7 +141,5 @@ class Scanner():
 
 def test():
     scanner = Scanner()
-    scanner.Url = 'www.7mfish.com'
+    scanner.Url = None
     scanner.Scan()
-
-test()
