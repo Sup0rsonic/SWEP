@@ -22,3 +22,6 @@ WhoisApiKey = None
 
 # SQLmap path for intruder.
 SQLmapPath = ''
+SQLmapHost = 'localhost'
+SQLmapPort = '8775'
+SQLmapFileDir = None

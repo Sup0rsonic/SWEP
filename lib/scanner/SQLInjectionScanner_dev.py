@@ -58,11 +58,8 @@ class Scanner():
         self.LoadKeywordParms()
         self.VulUrlList = []
         self.Stat = False
-        if dev_mode:
-            self.Spider = lib.spider.SpiderNew.Spider()
-        else:
-            self.Spider = lib.spider.Spider.Spider()
-        pass
+        self.Spider = lib.spider.Spider.Spider()
+
 
 
     def LoadKeywordParms(self):
@@ -229,7 +226,7 @@ class Scanner():
 
 def test():
     scanner = Scanner()
-    scanner.Url = None
+    scanner.Url = 'www.jkx.cn'
     scanner.Scan()
     return
 

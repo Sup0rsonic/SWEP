@@ -8,7 +8,7 @@ test = 1
 
 def info():
     info = {
-        'name': 'admin',
+        'name': 'manage',
         'path': 'ManagementScanner',
         'fullname': 'SWEP MANAGEMENT PAGE SCANNER',
         'description': 'A simple management bruteforcing tool.',

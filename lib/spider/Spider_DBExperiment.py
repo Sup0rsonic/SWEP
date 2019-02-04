@@ -4,6 +4,7 @@ import threading
 import bs4
 import time
 import re
+import sqlite3
 
 
 # Hope this work. No more bugs. God bless me. Ramen.
@@ -25,6 +26,9 @@ class Spider():
         self.TaskList = []
         self.DuplicateUrl = []
         self.UrlList = []
+        self.Database = sqlite3.Connection(":memory:", check_same_thread=False)
+        self.Session = self.Database.cursor()
+        self.Session.execute('CREATE TABLE urls(url VARCHAR(255));')
         self.Time = 0
         pass
 
@@ -37,12 +41,18 @@ class Spider():
             if not self.Protocol:
                 print '[!] Protocol not specified, using HTTP by default.'
                 self.Protocol = 'http'
-            if not self.Thread:
+            if not self.Thread or not str(self.Thread).isdigit():
                 self.Thread = 10
+            elif not str(self.Thread).isdigit():
+                print '[!] Invalid thread format, using 10 by default.'
             if not self.Timeout:
                 self.Timeout = 3
+            elif not str(self.Timeout).isdigit():
+                print '[!] Invalid timeout format, using 3 by default.'
             if not self.GetHomepage():
                 return
+            self.Thread = int(self.Thread)
+            self.Timeout = int(self.Timeout)
             time.sleep(1)
             watcher = threading.Thread(target=self.ThreadWatcher)
             watcher.setDaemon(True)
@@ -61,12 +71,12 @@ class Spider():
                     thread.start()
                     self.TaskList.append(thread)
                     if not self.Queue.qsize():
-                        for item in self.TaskList:
-                            item.join()
-                        time.sleep(1)
-                if not self.Queue.qsize():
-                    print '[*] No URL left, synchronizing tasks.'
-                    break
+                        thread.join()
+                    if not self.Queue.qsize() and not len(self.TaskList):
+                        print '[*] No URL left, synchronizing tasks.'
+                        time.sleep(3)
+                        self.Status = False
+                        break
         except Exception, e:
             print '[!] Failed to spider site: %s' %(str(e))
         except KeyboardInterrupt:
@@ -81,11 +91,12 @@ class Spider():
 
 
     def GetHomepage(self):
-        self.UrlList = []
         try:
-            resp = requests.get('%s://%s' %(self.Protocol, self.Url), timeout=self.Timeout)
+            head = requests.head('%s://%s/' %(self.Protocol, self.Url), timeout=self.Timeout)
+            if 'text' not in head.headers['Content-Type']:
+                return
+            resp = requests.get('%s://%s/' % (self.Protocol, self.Url), timeout=self.Timeout).text
             UrlList = self.CheckUrlList(resp)
-            UrlList.append('%s://%s' % (self.Protocol, self.Url))
             UrlList = self.ListUpdate(UrlList)
         except requests.Timeout:
             print '[!] Timed out fetching homepage.'
@@ -94,82 +105,63 @@ class Spider():
         except Exception ,e:
             print '[!] Failed to fetch url: %s' %(str(e))
         else:
-            return UrlList
+            return 1
         print '[!] Spider got a error, quitting.'
         return
 
-
-    def CheckUrlList(self, resp):
-        url = re.sub('/([a-zA-Z0-9\-_]+\.[a-zA-Z0-9]+)$', '', resp.url.split('?')[0])
-        resp = resp.text
-        soup = bs4.BeautifulSoup(resp)
+    def CheckUrlList(self, text):
+        soup = bs4.BeautifulSoup(text)
         a = soup.findAll('a')
         UrlList = []
-        NewUrlList = []
         if not a:
-            return []
+            return
         for item in a:
             Url = item.get('href')
             if not Url:
                 continue
-            if '#' in Url:
-                Url = Url.split('#')[0]
-            if 'mailto:' in Url or 'irc:' in Url:
-                continue
-            Url = re.sub('javascript:.*', '', Url)
             if self.Url not in Url:
-                if not Url.startswith('//') and not Url.startswith('http'):
-                    if Url.startswith('/'):
-                        UrlList.append('%s://%s%s' %(self.Protocol, self.Url, Url))
-                    elif Url.startswith('..'):
-                        PageUrl = '%s://' % (self.Protocol)
-                        Path = re.sub('http[s]://', '', url).split('/')
-                        for i in range(len(re.findall('\.\.\./', Url))):
-                            Path.pop()
-                            Path.pop()
-                        for i in range(len(re.findall('\.\./', Url))):
-                            Path.pop()
-                        for i in Path:
-                            PageUrl += i
-                            PageUrl += '/'
-                        UrlList.append(PageUrl)
-                    else:
-                        UrlList.append('%s/%s' %(url, Url))
+                if not Url.startswith('http'):
+                    if not Url.startswith('//'):
+                        UrlList.append('%s://%s/%s' %(self.Protocol, self.Url, Url))
             else:
                 if Url.startswith('http'):
                     UrlList.append(Url)
                 if Url.startswith('//'):
                     UrlList.append('%s:%s' %(self.Protocol, Url))
-        for item in UrlList:
-            item = item.lstrip('%s://' %(self.Protocol))
-            NewUrlList.append('%s://%s' %(self.Protocol, item.replace('//', '/')))
-        return NewUrlList
+        UrlList = self.RemoveFile(UrlList) # Speed should much faster.
+        return UrlList
 
 
     def ListUpdate(self, UrlList): # Update list.
+        session = self.Database.cursor()
         if not UrlList:
             return
         for item in UrlList:
-            if item not in self.UrlList:
-                print '[*] Fetched: %s' % (item)
+            if not session.execute('SELECT * FROM urls WHERE url="%s";' %(item)).fetchall():
+                print '[*] Fetched: %s' %(item)
+                session.execute('INSERT INTO urls VALUES ("%s");' %(item))
                 self.Queue.put(item)
                 self.UrlList.append(item)
         return UrlList
+        #     if item not in self.UrlList:
+        #         print '[*] Fetched: %s' % (item)
+        #         self.Queue.put(item)
+        #         self.UrlList.append(item)
+        # return UrlList
 
 
     def GetPage(self, Url):
         try:
-            if re.findall('\.zip|\.7z|\.rar|\.jpg|\.png|\.ico|\.pp|\.xls|\.sql|\.mdb|\.pdf|\.fl|\.sw|\.tar|\.gif|\.svg|\.exe|\.msi|\.dmg|\.ap|\.pk',Url , re.MULTILINE+re.IGNORECASE):
-                print '[W] IGNORING non-page file %s.' %(Url)
-                return
             head = requests.head(Url, timeout=self.Timeout)
-            if head.status_code == 404:
-                print '[W] 404 Not Found at %s' %(Url)
+            if 'text' not in head.headers['Content-Type']:
+                print '[*] Skipping non-text file %s' %(Url)
                 return
-            if 'text' not in head.headers['Content-Type'] or 'application' in head.headers['Content-Type']:
-                print '[*] Non-text item %s found, passing.' %(Url)
+            if 'zip' in Url:
+                print '[W] WARNING: FETCHING A ZIP FILE.'
+                print '[W] WARNING: URL: %s' %(Url)
+                print '[W] HEADER: %s' %(head.headers['Content-Type'])
                 return
-            resp = requests.get(Url ,timeout=self.Timeout)
+            resp = requests.get(Url ,timeout=self.Timeout).text
             UrlList = self.CheckUrlList(resp)
             self.ListUpdate(UrlList)
         except requests.Timeout:
@@ -203,8 +195,22 @@ class Spider():
                     self.TaskList.remove(item)
 
 
+    def RemoveFile(self, UrlList): # EXPERIMENT function. For SPECIAL USE only.
+        NewUrlList = []
+        if not UrlList:
+            return
+        for item in UrlList:
+            if not re.findall('\.ph|\.htm|\.txt|\.js|\.css|\.as|\.action|\.do', item):
+                if re.findall('\.zip|\.7z|\.rar|\.jpg|\.png|\.ico|\.doc|\.pp|\.xls|\.sql|\.mdb|\.pdf|\.fl|\.sf', item):
+                    return
+            NewUrlList.append(item)
+        return NewUrlList
+
+
 def test():
     spider = Spider()
-    spider.Thread = 20
-    spider.Url = ''
+    spider.Url = 'www.phpcms.cn'
     spider.SpiderSite()
+
+
+test()
