@@ -1,47 +1,56 @@
-import lib.intruder
+import sys
+import os
+import ModuleHandler
+import PrintHandler
 
 
-class Controller():
+class  Controller():
     def __init__(self):
-        self.Switch = {'adminpage': False, 'sqli': False, 'ftp': False, 'logic': False, 'ssh': False, 'spider': False, 'xss': False, 'cmsexp': False, 'cmsidf': False, 'hashcheck': False}
-        self.Args = {'url': None, 'Thread': None, 'FTPUserDict': None, 'FTPPasswordDict': None, 'SSHUserDict': None, 'SSHPassDict': None}
-        self.ProcessList = []
-        pass
+        self.ModuleHandler = ModuleHandler.ModuleHandler()
+        self.PrintHandler = PrintHandler.PrintController()
+        self.Path = os.path.abspath(__file__)
+        
+
+    def Set(self, arglist):
+        if len(arglist) == 1:
+            print '[*] Invalid usage. Usage: set arg val'
+            return
+        self.ModuleHandler.ArgumentList[arglist[0]] = arglist[1]
+        return 1
 
 
-    def Start(self, switch, args): # Start intrude
-        if not self.Args['url']:
-            print '[!] URL not specified.'
-        if not self.Args['Thread']:
-            print '[!] Thread not specified, Using 10 by default.'
-            self.Args['Thread'] = 3
+    def unset(self, arglist):
+        self.ModuleHandler.ArgumentList[arglist[0]] = None
+        return
+
+
+    def switch(self, name, mode):
+        if mode == 'on':
+            self.ModuleHandler.OptionDict[name] = True
+        elif mode == 'off':
+            self.ModuleHandler.OptionDict[name] = False
         else:
-            self.Args['Thread'] = int(str(self.Args['Thread']))
-        if self.Switch['cmsidf']:
-            pass
-        if self.Switch['spider']:
-            pass
-        if self.Switch['adminpage']:
-            pass
-        if self.Switch['xss']:
-            pass
-        if self.Switch['sqli']:
-            pass
-        if self.Switch['hashcheck']:
-            pass
-        if self.Switch['logic']:
-            pass
-        if self.Switch['cmsexp']:
-            pass
-        if self.Switch['ssh']:
-            pass
-        if self.Switch['ftp']:
-            pass
+            print '[*] Invalid usage. Usage: switch module on/off'
+            return 0
+        return 1
 
 
-    def Status(self): # Get status from modules.
+    def pause(self):
         pass
 
 
-    def GetThread(self):
+    def ShowInfo(self):
+        pass
+
+
+    def ShowOptions(self):
+        self.PrintHandler.PrintLine('--SWEP Intruder----------')
+        self.PrintHandler.PrintLine('')
+        self.PrintHandler.PrintLine('')
+        self.PrintHandler.PrintLine('ID    NAME       STATUS')
+        self.PrintHandler.PrintLine('==    ====       ======')
+        counter = 0
+        for item in self.ModuleHandler.OptionDict.keys():
+            counter += 1
+            self.PrintHandler.PrintLine('%s%s%s' %(str(counter).ljust(6, ' '), item.ljust(11, ' '), 'ON' if self.ModuleHandler.OptionDict[item] else 'OFF'))
         pass

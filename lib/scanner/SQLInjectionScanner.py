@@ -45,7 +45,7 @@ class Scanner():
 
 
     def GetSitePages(self, *PageList):
-        self.Spider.url = self.Url
+        self.Spider.Url = self.Url
         self.Spider.Threads = self.Threads
         self.Spider.Protocol = self.Protocol
         if PageList:
@@ -179,6 +179,8 @@ class Scanner():
 
 def test():
     scanner = Scanner()
-    scanner.Url = None
+    scanner.Url = ''
     scanner.Scan()
+
+
 

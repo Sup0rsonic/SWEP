@@ -104,11 +104,12 @@ class Spider():
         resp = resp.text
         soup = bs4.BeautifulSoup(resp)
         a = soup.findAll('a')
+        taglist = soup.findAll()
         UrlList = []
         NewUrlList = []
-        if not a:
+        if not taglist:
             return []
-        for item in a:
+        for item in taglist:
             Url = item.get('href')
             if not Url:
                 continue

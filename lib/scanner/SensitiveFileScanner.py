@@ -12,7 +12,7 @@ def info():
         'path': 'SensitiveFileScanner',
         'fullname': 'SWEP SENSITIVE FILE SCANNER',
         'description': 'A extra simple sensitive file scanner.',
-        'parameters': {
+        'parameter': {
             'Url': 'Target URL.',
             'Threads': 'Threads. Default: 10',
             'SensitiveFileDict': '(OPTIONAL) Sensitive file dictionary',
@@ -108,6 +108,9 @@ class Scanner():
     def GetPage(self, url):
         Url = '%s://%s/%s' % (self.Protocol, self.Url, url)
         try:
+            head = requests.head(Url, timeout=int(self.Timeout))
+            if head.status_code == 404:
+                return
             resp = requests.get(Url, timeout=int(self.Timeout))
             if resp.status_code == 302:
                 print '[*] 302 Found found at %s.' %(Url)

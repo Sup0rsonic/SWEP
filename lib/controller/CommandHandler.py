@@ -495,7 +495,7 @@ class CommandHandler():
         elif CommandDict[0] == 'help':
             self.HelpController.help('swepdb')
         else:
-            self.HelpController.usage('swepdb_' + CommandDict[1])
+            self.HelpController.usage('swepdb_' + CommandDict[0])
         return
 
 

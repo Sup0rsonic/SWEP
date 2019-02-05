@@ -90,8 +90,9 @@ class ScannerController():
             if not path:
                 print '[!] Module not found.'
                 self.LoadLegacy(CommandDict)
-            self.Scanner = importlib.import_module('lib.scanner.' + path).Scanner()
-            self.Name = self.Scanner.Name
+            module = importlib.import_module('lib.scanner.' + path)
+            self.Scanner = module.Scanner()
+            self.Name = module.info()['name']
             print '[*] Load complete.'
         except Exception, e:
             print '[!] Failed to load module from database %s: %s' %(module, e)

@@ -31,6 +31,7 @@ def info():
             'Thread': 'Threads. Default: 10',
             'Ratio': 'Page difference ratio, Between 0 and 1. Default: 0.8',
             'Protocol': 'Protocol. Default: http',
+            'ParameterMode': 'Parameter mode for pages without parameter, "Manual" or "M" for manual, "Skip" for or "S" to skip. Default: Skip',
             'Timeout': 'Request timeout. Default: 3'
         },
         'author': 'BERACHERS security',
@@ -44,20 +45,21 @@ class Scanner():
         self.Url = None
         self.Ratio = 0.8
         self.Protocol = 'http'
+        self.ParameterMode = 'skip'
         self.Thread = 10
         self.Timeout = 3
         self._Counter = 0
-        self.Timer = 0
+        self.Time = 0
         self.Queue = Queue.Queue()
+        self.TaskList = []
         self.Differ = difflib.SequenceMatcher()
-        self.Status = 'None'
         self.path = os.path.abspath(__file__)
         self.dir = os.path.dirname(self.path)
         self.FuzzDict = json.load(open('%s/SQLiFuzzList.json' %(self.dir), 'r'))
         self.FuzzKeyword = self.FuzzDict['keyword']
         self.LoadKeywordParms()
         self.VulUrlList = []
-        self.Stat = False
+        self.Status = False
         self.Spider = lib.spider.Spider.Spider()
 
 
@@ -85,11 +87,12 @@ class Scanner():
             self.Protocol = 'http'
         elif not self.Thread:
             print '[!] Thread not specified, Using 10 by default.'
-        self.Status = 'Scanning'
         UrlList = self.FetchPageList()
         if not UrlList:
             while raw_input('[w] Warning: SWEP got an empty page response. do you want to retry?(y/N) ').upper() != 'N':
-                self.FetchPageList()
+                UrlList = self.FetchPageList()
+                if UrlList:
+                    break
             else:
                 print '[+] Check completed, No url found.' # So WTF happend?
                 return
@@ -110,12 +113,35 @@ class Scanner():
 
     def SimplifyPageList(self, pagelist): # A counter: time cost here = 50 minutes.
         UrlList = []
+        SuffixList = {}
         SavedUrl = {}
         for item in pagelist: # 'http://www.test.com/123?123=321'
             try:
                 ArgList = item.split('?')
                 if len(ArgList) == 1:
-                    continue
+                    if 'M' in self.ParameterMode.upper():
+                        if raw_input('[*] Not parameters found on %s. Do you want to modify it manually?(y/N)').upper() != 'Y':
+                            SuffixList[ArgList[0]] = None
+                        if raw_input('[*] Please specify Long/Short mode.(Long mode: /dir/page.ext, Short mode: page.ext)(L/s)').upper() != 's':
+                            url = re.findall('//.*$', ArgList[0])
+                        else:
+                            url = re.findall('/[^/]*$', ArgList[0])
+                        if url not in SuffixList.keys():
+                            while True:
+                                parm = raw_input('[*] Parameter(s) for %s. e.g: parm1=123&parm2=321: ' %(url))
+                                if '=' in parm:
+                                    break
+                                if raw_input('[*] Invalid format, Retype?(Y/n)').upper() == 'N':
+                                    if raw_input('[*] Do you want to pass this page in remaining test?(y/N) ').upper() != 'Y':
+                                        continue
+                                    else:
+                                        SuffixList[ArgList[0]] = None
+                            SuffixList[url] = parm
+                        if not SuffixList[ArgList[0]]:
+                            continue
+                        ArgList.append(SuffixList[url])
+                    else:
+                        continue
                 ParmArgList = ArgList[1].split('&')
                 ParmArgDict = {}
                 for Argument in ParmArgList: # Extractval()
@@ -144,24 +170,26 @@ class Scanner():
     def CheckSQLInjection(self, UrlList):
         self.Stat = True
         if not UrlList:
-            print '[!] Empty URL list found.'
-        print '[*] Generating Queue.'
+            print '[!] Empty URL list found, quitting.'
+            return
         for item in UrlList:
             self.Queue.put(item)
-        self.UrlCount = self.Queue.qsize()
-        print '[+] Queue generate completed, Total %s item(s).' %(str(self.UrlCount))
-        timer = threading.Thread(target=self._Timer)
-        timer.setDaemon(True)
+        print '[+] Queue generate completed, Total %i item(s).' %(self.Queue.qsize())
+        self.Status = True
         counter = threading.Thread(target=self._ThreadCounter)
         counter.setDaemon(True)
-        timer.start()
+        checker = threading.Thread(target=self._ThreadChecker)
+        checker.setDaemon(True)
         counter.start()
+        checker.start()
         try:
             while True:
-                if self._Counter < self.Thread:
+                if not self.Queue.qsize():
+                    break
+                if len(self.TaskList) < self.Thread:
                     thread = threading.Thread(target=self._SQLInjectionChecker, args=[self.Queue.get()])
                     thread.start()
-                    self._Counter += 1
+                    self.TaskList.append(thread)
                     if not self.Queue.qsize():
                         thread.join()
                         break
@@ -175,19 +203,23 @@ class Scanner():
 
     def _SQLInjectionChecker(self, url):
         UrlList = []
-        try:
-            rawresp = requests.get(url, timeout=int(self.Timeout)).text
-        except Exception, e:
-            print '[!] Failed to fetch page %s: %s' %(url, str(e))
-            self._Counter -= 1
-            return
-        except requests.Timeout:
-            while raw_input('[*] Timeout during fetching raw page %s, retry?(Y/n) ').upper() != 'N':
+        rawresp = None
+        while not rawresp:
+            try:
                 rawresp = requests.get(url, timeout=int(self.Timeout)).text
-            else:
-                print '[*] Timed out fetching url. Quitting.'
-                self._Counter -= 1
-                return
+            except requests.Timeout:
+                print '[!] Timed out feching %s.' %(url)
+            except requests.ConnectionError:
+                print '[!] Failed to connect to server fetching %s.' %(url)
+            except Exception, e:
+                print '[!] Failed to fetch page %s: %s' %(url, str(e))
+                if raw_input('[*] Do you want to retry?(Y/n)').upper() == 'N':
+                    return
+                else:
+                    continue
+            finally:
+                if requests.RequestException:
+                    return
         try:
             for item in self.FuzzKeyword:
                 UrlList.append(url + item)
@@ -202,20 +234,21 @@ class Scanner():
             print '[*] Got a timeout at %s.' %(url)
         except Exception, e:
             print '[!] Failed to fetch a url during fuzzing: %s' %(str(e))
-        self._Counter -= 1
         return
-
-
-    def _Timer(self):
-        while self.Stat:
-            time.sleep(1)
-            self.Timer += 1
 
 
     def _ThreadCounter(self):
         while self.Stat:
-            time.sleep(10)
-            print '[*] Used %s seconds, %s page(s) total, %s vulnerable page(s) found, %s pages left.' %(str(self.Timer), str(self.UrlCount), str(len(self.VulUrlList)), str(self.Queue.qsize()))
+            time.sleep(5)
+            self.Time += 5
+            print '[*] Used %i seconds, %i page(s) total, %i vulnerable page(s) found, %i pages left.' %(self.Time,self.Queue.qsize() , len(self.VulUrlList), self.Queue.qsize())
+
+
+    def _ThreadChecker(self):
+        while self.Stat:
+            for item in self.TaskList:
+                if not item.isAlive():
+                    self.TaskList.remove(item)
 
 
     def SortNew(self, dict):
@@ -226,7 +259,7 @@ class Scanner():
 
 def test():
     scanner = Scanner()
-    scanner.Url = 'www.jkx.cn'
+    scanner.Url = '192.168.0.101:8081/sqli-labs'
     scanner.Scan()
     return
 
