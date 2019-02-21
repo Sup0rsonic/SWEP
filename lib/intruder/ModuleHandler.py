@@ -1,207 +1,194 @@
+# Module Handler. This is the dirty part.
 import os
-import lib.config
+import sys
+import threading
+import queue
+import time
 import lib.spider.Spider
-import lib.scanner.AdminPageFetcher
-import lib.scanner.FTPPasswordScanner
-import lib.scanner.SQLInjectionScanner_dev
-import lib.scanner.HashCracker
-import lib.scanner.SSHPasswordScanner
-import lib.scanner.SensitiveFileScanner
+# Scanners need spider
+import lib.scanner.SQLInjectionScanner
 import lib.scanner.XSSScanner
+# Scanners don't need spider
+import lib.scanner.AdminPageFetcher
+import lib.scanner.SensitiveFileScanner
+# Service scanners.
 import lib.scanner.PortCheck
-import lib.controller.sqlmapController
-import lib.controller.ExploitController
-import lib.controller.FunctionLib
-import lib.fingerprint.FingerprintIdentifier
-import PrintHandler
+import lib.scanner.FTPPasswordScanner
+import lib.scanner.SSHPasswordScanner
 
 
 class ModuleHandler():
     def __init__(self):
-        self.OptionDict = {'Spider': False, 'Admin': False, 'FTP': False, 'SQLi': False, 'Hash': False, 'SSH': False, 'File': False, 'XSS': False, 'CMSidf': False, 'CMSExp': False, 'Port': False}
-        self.Url = None
-        self.Threads = None
-        self.UsernameFile = None
-        self.PasswordFile = None
-        self.UserPassFile = None
-        self.SSHPort = None
-        self.FTPPort = None
-        self.Address = None
-        self.SensitiveFileList = None
-        self.ManagementFileList = None
-        self.ArgumentList = []
-        self.ScannerList = []
-        self.InformationDict = {}
-        self.Dir = os.path.dirname(os.path.abspath(__file__))
-        self.PrintHandler = PrintHandler.PrintController()
+        self.ScannerList = {
+            'sql': {'name': 'SQL Injection', 'stat': False, 'item': lib.scanner.SQLInjectionScanner.Scanner()},
+            'xss': {'name': 'XSS', 'stat': False, 'item': lib.scanner.XSSScanner.Scanner()},
+            'admin': {'name': 'Management Page', 'stat': False, 'item': lib.scanner.AdminPageFetcher.Scanner()},
+            'file': {'name': 'Sensitive File', 'stat': False, 'item': lib.scanner.SensitiveFileScanner.Scanner()},
+            'ftp': {'name': 'FTP Identify', 'stat': False, 'item': lib.scanner.FTPPasswordScanner.Scanner()},
+            'ssh': {'name': 'SSH Identify', 'stat': False, 'item': lib.scanner.SSHPasswordScanner.Scanner()}
+        }
+        self.Spider = lib.spider.Spider.Spider()
+        self.PortScanner = lib.scanner.PortCheck.Scanner()
+        self.WebScanFlag = True
+        self.ServiceScanFlag = True
+        self.Status = False
+        self.PortStatus = {21: True, 22: True}
+        self.ScanStatus = {'web': 'HOLD', 'service': 'HOLD'}
+        self.Thread = 2
+        self.Time = 0
+        self.UrlList = []
+        self.Queue = []
+        self.ScanList = []
+        self.TaskList = []
         pass
 
 
-    def LoadArguments(self):
-        pass
-
-
-    def LoadModules(self):
-        try:
-            if self.OptionDict['Spider']:
-                self.Spider = lib.spider.Spider.Spider()
-                self.ScannerList.append(self.Spider)
-            if self.OptionDict['Admin']:
-                self.AdminFetcher = lib.scanner.AdminPageFetcher.Scanner()
-                self.ScannerList.append(self.AdminFetcher)
-            if self.OptionDict['FTP']:
-                self.FTPBruteforcer = lib.scanner.FTPPasswordScanner.Scanner()
-                self.ScannerList.append(self.FTPBruteforcer)
-            if self.OptionDict['SQLi']:
-                self.SQLInjectionChecker = lib.scanner.SQLInjectionScanner_dev.Scanner()
-                self.ScannerList.append(self.SQLInjectionChecker)
-            if self.OptionDict['Hash']:
-                self.HashChecker = lib.scanner.HashCracker.Scanner()
-                self.ScannerList.append(self.SQLInjectionChecker)
-            if self.OptionDict['SSH']:
-                self.SSHPasswordScanner = lib.scanner.SSHPasswordScanner.Scanner()
-                self.ScannerList.append(self.SSHPasswordScanner)
-            if self.OptionDict['File']:
-                self.SensitiveFileScanner = lib.scanner.SensitiveFileScanner.Scanner()
-                self.ScannerList.append(self.SensitiveFileScanner)
-            if self.OptionDict['XSS']:
-                self.XSSScanner = lib.scanner.XSSScanner.Scanner()
-                self.ScannerList.append(self.XSSScanner)
-            if self.OptionDict['CMSidf']:
-                self.CMSIdentifier = lib.fingerprint.FingerprintIdentifier.FingerprintIdentifier()
-                self.ScannerList.append(self.CMSIdentifier)
-            if self.OptionDict['CMSExp']:
-                self.CMSExploitloader = lib.controller.ExploitController.ExploitController()
-                self.ScannerList.append(self.CMSExploitloader)
-            if self.OptionDict['Port']:
-                self.PortChecker = lib.scanner.PortCheck.Scanner()
-                self.ScannerList.append(self.PortChecker)
-        except Exception, e:
-            print '[!] Failed to load modules: %s' %(str(e))
-        print '[*] Module load completed.'
+    def Scan(self):
+        for item in self.ScannerList.keys():
+            if not self.ScannerList[item]['item'].Url:
+                print '[!] URL Not specified.'
+        if self.WebScanFlag:
+            if not self.Spider.Url:
+                print '[!] Spider URL Not specified, passing.'
+            print '[*] Starting spider.'
+            spider = threading.Thread(target=self.Spider.SpiderSite)
+            self.TaskList.append(spider)
+        if self.ServiceScanFlag:
+            if not self.PortScanner.Url:
+                print '[!] Port scanner URL Not specified, passing.'
+            portscanner = threading.Thread(target=self.PortScanner.Scan)
+            self.TaskList.append(portscanner)
+        self.Status = True
+        for item in self.TaskList:
+            item.start()
+        taskchecker = threading.Thread(target=self.TaskChecker)
+        taskchecker.start()
+        Timer = threading.Thread(target=self.Timer)
+        Timer.start()
+        while self.Status:
+            if not len(self.TaskList):
+                self.Status = False
+        self.UrlList = self.Spider.UrlList
+        self.ScannerList['sql']['item'].PageList = self.UrlList
+        self.ScannerList['xss']['item'].UrlList = self.UrlList
+        for item in self.PortScanner.PortList:
+            if item[0] == 21:
+                self.PortStatus[21] = True
+            if item[0] == 22:
+                self.PortStatus[22] = True
+        TaskChecker = threading.Thread(target=self.TaskChecker)
+        StatReporter = threading.Thread(target=self.StatReporter)
+        Timer = threading.Thread(target=self.Timer)
+        WebScanner = threading.Thread(target=self.WebScan)
+        ServiceScanner = threading.Thread(target=self.WebScan)
+        if self.ServiceScanFlag:
+            if not self.PortStatus[21]:
+                if raw_input('[*] Target port 21 seems closed. Do you want to check it anyway?(y/N)').upper() != 'Y':
+                    self.ScannerList['ftp']['stat'] = False
+            if not self.PortStatus[22]:
+                if raw_input('[*] Target port 22 seems closed. Do you want to check it anyway?(y/N)').upper() != 'Y':
+                    self.ScannerList['ssh']['stat'] = False
+        if self.WebScanFlag:
+            if not self.UrlList:
+                if self.ScannerList['sql']['stat']:
+                    if raw_input('[*] Failed to get target pages, Do you want to check target SQL Injection anyway?(y/N)').upper() != 'Y':
+                        self.ScannerList['sql']['stat'] = False
+                if self.ScannerList['xss']['stat']:
+                    if raw_input('[*] Failed to get target pages, Do you want to check target XSS vulnerability anyway(y/N)').upper() != 'Y':
+                        self.ScannerList['xss']['stat'] = False
+        self.Status = True
+        if self.WebScanFlag:
+            WebScanner.start()
+            self.ScanList.append(WebScanner)
+        if self.ServiceScanFlag:
+            ServiceScanner.start()
+            self.ScanList.append(ServiceScanner)
+        TaskChecker.start()
+        Timer.start()
+        StatReporter.start()
+        while True:
+            for item in self.ScanList:
+                if not item.isAlive:
+                    self.ScanList.remove(item)
+            if not len(self.ScanList):
+                break
+        self.Status = False
+        print '[*] Scan completed.'
         return
 
 
-    def StartCheck(self):
-        if not self.Url:
-            print '[!] URL Not specified.'
-            return
-        if not self.Threads:
-            print '[!] Threads not specified, Using 10 by default.'
-            self.Threads = 10
-        if not os.path.isfile(self.UserPassFile):
-            print '[*] Userpass file not found.'
-            if not os.path.isfile(self.UsernameFile):
-                print '[!] Username file not found, using module default(if there is).'
-                self.UsernameFile = None
-            if not os.path.isfile(self.PasswordFile):
-                print '[!] Password file not found, using module default(if there is).'
-                self.UsernameFile = None
-        else:
-            pass
-        if not self.SSHPort:
-            print '[!] SSH port not specified, using 22 by default.'
-            self.SSHPort = 22
-        if not self.FTPPort:
-            print '[!] FTP port not specified, using 21 by default.'
-            self.FTPPort = 21
-        if not os.path.isfile(self.SensitiveFileList):
-            print '[!] Sensitive file list not found, using module default(if there is).'
-        if not os.path.isfile(self.ManagementFileList):
-            print '[!] Management file list not found, using module default(if there is).'
-        for item in self.ScannerList:
-            item.Url = self.Url
-            item.Threads = int(self.Threads)
-            item.Thread = int(self.Threads)
-            item.UsernameFile = self.UsernameFile
-            item.PasswordFile = self.PasswordFile
-            item.UserPassFile = self.UserPassFile
-            item.UserpassFile = self.UserPassFile
-            if item == self.FTPBruteforcer:
-                item.Port = self.FTPPort
-            elif item == self.SSHPasswordScanner:
-                item.Port = self.SSHPort
-            elif item == self.SensitiveFileScanner:
-                item.SensitiveFileList = self.SensitiveFileList
-            elif item == self.AdminFetcher:
-                item.AdminPageList = self.ManagementFileList
-        pass
+
+    def WebScan(self):
+        WebTasks = []
+        for item in self.ScannerList.keys():
+            if self.ScannerList[item]['name'] in ['ssh', 'ftp']:
+                continue
+            if self.ScannerList[item]['stat'] == True:
+                WebTasks.append([self.ScannerList[item]['name'], self.ScannerList[item]['item']])
+        while len(WebTasks):
+            if len(self.TaskList) < self.Thread:
+                Task = WebTasks.pop()
+                print '[*] Now starting %s, %i web scan task(s) left.' %(Task[0], len(WebTasks))
+                thread = threading.Thread(target=Task[1].Scan(), name='WebScanner')
+                thread.start()
+                self.TaskList.append(thread)
+            if not len(WebTasks):
+                print '[*] All web tasks started, Now synchronizing tasks.'
+                for item in self.TaskList:
+                    if item.name == 'WebScanner':
+                        item.join()
+                print '[*] All web tasks completed. Now return.'
+        print '[*] Web scan completed'
+        return
 
 
-    def ServiceScanTask(self):
-        self.ServiceScan = True
-        print '[*] Starting service scan.'
-        PortScannerThread = raw_input('[*] Provide port scanner thread to continue: ')
-        if not PortScannerThread.isdigit():
-            print '[!] Thread error, Require int value.'
-            print '[*] Setting thread to 25.'
-            self.PortChecker.Thread = 25
-        else:
-            self.PortChecker.Thread = int(PortScannerThread)
-        self.PortChecker.Scan()
-        self.OpenPortList = []
-        for item in self.PortChecker.PortList:
-            self.OpenPortList.append(item[0])
-        SSHScanFlag = False
-        FTPScanFlag = False
-        if self.SSHPasswordScanner in self.ScannerList:
-            SSHScanFlag = True
-            if self.SSHPort not in self.OpenPortList:
-                print '[!] SSH Port of target seems closed. Please provide new port or c to cancel SSH scan.'
-                SSHPort = raw_input('[*] Please provide port or c to cancel: ')
-                if 'c' in SSHPort:
-                    SSHScanFlag = False
-                    pass
-                else:
-                    if not SSHPort.isdigit():
-                        print '[!] Port error, Require int value.'
-                        print '[*] Setting default port to 22.'
-                        self.SSHPasswordScanner.Port = 22
-                    else:
-                        self.SSHPasswordScanner.Port = int(SSHPort)
-            else:
-                pass
-        self.PrintHandler.Mute()
-        if SSHScanFlag:
-            SSHIdentifyList = self.SSHPasswordScanner.Scan()
-        else:
-            SSHIdentifyList = []
-        self.PrintHandler.Resume()
-        if self.FTPBruteforcer in self.ScannerList:
-            FTPScanFlag = True
-            if self.FTPPort not in self.OpenPortList:
-                print '[!] FTP port of target seems closed. Please provide new port or c to cancel FTP scan.'
-                FTPPort = raw_input('[*] Please provide port or c to cancel: ')
-                if 'c' in FTPPort:
-                    FTPScanFlag = False
-                else:
-                    if not FTPPort.isdigit():
-                        print '[!] Port error, Require int value.'
-                        print '[*] Setting default port to 21.'
-                        self.FTPBruteforcer.port = 21
-                    else:
-                        self.FTPBruteforcer.port = int(self.FTPPort)
-        self.PrintHandler.Mute()
-        if FTPScanFlag:
-            FTPIdentifyList = self.FTPBruteforcer.Scan()
-        else:
-            FTPIdentifyList = []
-        self.ServiceScan = False
-        print '[*] Scan completed.'
-        if SSHIdentifyList:
-            print '[+] %i SSH Identify found.' %(len(SSHIdentifyList))
-            print '[*] Incoming Identify'
-            for item in SSHIdentifyList:
-                print ' |    %s: %s' %(item[0], item[1])
-            print '[*] Identify output completed.'
-        if FTPIdentifyList:
-            print '[+] %i FTP Identify found.' %(len(FTPIdentifyList))
-            print '[*] Incoming Identify.'
-            for item in FTPIdentifyList:
-                print ' |    %s: %s' %(item.split(':')[0], item.split(':')[1])
-            print '[*] Identify output completed.'
+    def ServiceScan(self):
+        ServiceTasks = []
+        for item in self.ScannerList.keys():
+            if self.ScannerList[item]['name'] not in ['ssh', 'ftp']:
+                continue
+            if self.ScannerList[item]['stat'] == True:
+                ServiceTasks.append([self.ScannerList[item]['name'], self.ScannerList[item]['item']])
+        while len(ServiceTasks):
+            if len(self.TaskList) < self.Thread:
+                Task = ServiceTasks.pop()
+                print '[*] Now starting %s, %i service scan task(s) left.' %(Task[0], len(ServiceTasks))
+                thread = threading.Thread(target=Task[1].Scan(), name='ServiceScanner')
+                thread.start()
+                self.TaskList.append(thread)
+            if not len(ServiceTasks):
+                print '[*] All service tasks started. Now synchronizing tasks.'
+                for item in self.TaskList:
+                    if item['name'] == 'ServiceScanner':
+                        item.join()
+                print '[*] All service scanner completed. Now return.'
         print '[*] Service scan completed.'
+        return
 
 
-    def WebScanTask(self):
-        pass
+    def TaskChecker(self):
+        time.sleep(1)
+        while self.Status:
+            for item in self.TaskList:
+                if not item.isAlive():
+                    self.TaskList.remove(item)
+            if not len(self.TaskList):
+                print '[*] All tasks completed, stopping task checker.'
+                break
+        return
+
+
+    def StatReporter(self):
+        while self.Status:
+            time.sleep(1)
+            print '[*] Web scanner status [%s] Service scanner status [%s]' %(self.ScanStatus['web'], self.ScanStatus['service'])
+        return
+
+
+    def Timer(self):
+        self.Time = 0
+        while self.Status:
+            time.sleep(1)
+            self.Time += 1
+            print '[*] Cost %i seconds, %i task(s) running.' %(self.Time, len(self.TaskList))
+        print '[*] Task completed, costed %i seconds.' %(self.Time)
