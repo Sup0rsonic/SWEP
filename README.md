@@ -1,23 +1,24 @@
 # SWEP
-![image](swep.jpg)<br><br>
+![image](swep.jpg)  
 ![image](https://img.shields.io/badge/Python-2.7-blue.svg?style=flat-square&logo=python)
-![image](https://img.shields.io/badge/license-MIT-lightgreen.svg?style=flat-square)<br>
+![image](https://img.shields.io/badge/license-MIT-lightgreen.svg?style=flat-square)  
 # SWEP
 SWEP is an open-source Web Exploitation Project.
 ## Version
-Ver 1.0.2 development unstable
+Ver 1.0.3 development stable
 ## Description
-SWEP is an (not very) easy-to-use, user-friendly highly-customizable scanner and web vulnerability exploitation framework.<br>
-This project supports python 2.7<br>
-Requirement:<br>
-> requests<br>
-> pickie<br>
-> sqlite3<br>
-> BeautifulSoup4<br>
-and more.<br>
+SWEP is an (not very) easy-to-use, user-friendly highly-customizable scanner and web vulnerability exploitation framework.  
+This project supports python 2.7  
+Requirement:  
+> requests  
+> pickie  
+> sqlite3  
+> BeautifulSoup4  
+> paramiko  
+and more.  
 ## Usage
-> git clone https://github.com/Sup0rsonic/SWEP.git<br>
-> pip install -r requirements.txt<br>
+> git clone https://github.com/Sup0rsonic/SWEP.git  
+> pip install -r requirements.txt  
 > python swep.py
 ## Disclaimer
 **SWEP and BREACHER security comes with ABSOLUTATLY NO RESPONSIBILITY**
@@ -39,8 +40,15 @@ This is a new project and we want you join this project and work together.
 12 January, 2019: 1.0.2 Released, Optimzed code, Imporved database mechanism.  
                   New intruder module is under development, Contact <1nt3rcepter@gmail.com> to join.  
 27 January, 2019: Fixed threading bug  
-21 Febuary, 2019: <http://www.webscan.cc> now down, Domain function will temporary not availiable before next release.  
+21 Feburary, 2019: <http://www.webscan.cc> now down, Domain function will temporary not availiable before next release.  
+22 Feburary, 2019: 1.0.3 Stable released. Optimized code, more scanner and wordlist.
 ### Release log  
+#### 1.0.3
+> Fixed more bugs, improved user experience.
+> Added more scanner, Now SWEP Supports more functions like hash cracking and s2 vulnerability scanning.
+> More development version scanner, giving faster speed and more robustness.
+> Added wordlists.
+> Now a stable version.
 #### 1.0.2
 > Database now supports scanner.  
 > New scanner format.  
@@ -53,12 +61,12 @@ This is a new project and we want you join this project and work together.
 > New exploit search functions are provided, too. Now you can search through database and switch back to legacy mode when database got an error.  
 > Exploit using new format. This is compatiable with database.  
 ### Contact us  
-Contact us at <intercepter@gmail.com>  
-###### SWEP and BREACHER security comes with ABSOLUTATLY NO RESPONSIBILITY<br>
-Don't use it to do illegal things. Although we don't really care if you did.<br>
-And we have no reponsibility if you do that, so take care.<br>
+Contact us at <intercepter@gmail.com>.  
+###### SWEP and BREACHER security comes with ABSOLUTATLY NO RESPONSIBILITY  
+Don't use it to do illegal things. Although we don't really care if you did.  
+And we have no reponsibility if you do that, so take care.  
 ### Contact us
-Wanna join us?<br>
+Wanna join us?  
 Contact us at <intercepter@gmail.com>. 
 
 BREACHER security  
