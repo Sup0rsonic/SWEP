@@ -2,6 +2,7 @@ import requests
 import re
 import queue
 import threading
+import time
 
 
 def info():
@@ -30,7 +31,7 @@ class Scanner():
         self.passlist = None
         self.Thread = 50
         self.Timeout = 3
-        self._Counter = 0
+        self.TaskList = []
         self._Queue = queue.Queue()
         pass
 
@@ -56,19 +57,29 @@ class Scanner():
             print '[*] %s password(s) loaded.' % (str(self._Queue.qsize()))
         except Exception, e:
             print '[!] Failed to load password list: %s' % (str(e))
+        taskchecker = threading.Thread(target=self.ThreadChecker)
+        taskchecker.setDaemon(True)
+        self.Status = True
+        taskchecker.start()
         try:
-            while True:
-                if self.Thread > self._Counter:
+            while self._Queue.qsize():
+                if self.Thread > len(self.TaskList):
                     try:
                         thread = threading.Thread(target=self.CheckPassword, args=(self.language, self._Queue.get()))
                         thread.start()
+                        self.TaskList.append(thread)
                         if not self._Queue.qsize():
-                            thread.join()
+                            print '[*] Scan completed, synchronizing threads.'
+                            for item in self.TaskList:
+                                item.join()
+                                self.Status = False
                             break
                     except Exception, e:
                         print '[!] Failed to start a thread: %s' % (str(e))
         except Exception, e:
             print '[!] Check password failed: %s' % (str(e))
+        self.Status = False
+        return
 
     def CheckPassword(self, mode, password):
         try:
@@ -93,6 +104,17 @@ class Scanner():
         except Exception, e:
             print '[!] Error checking a password: %s' % (str(e))
         return
+
+
+    def ThreadChecker(self):
+        time.sleep(1)
+        while self.Status:
+            for item in self.TaskList:
+                if not item.isAlive():
+                    self.TaskList.remove(item)
+                    del item
+        return
+
 
     def info(self):
         InformationList = info()

@@ -67,7 +67,7 @@ def scan(hostname):
         print '[*] No website found on %s'%hostname
         return
     if raw.status_code != 200:
-        print '[*] Error occurred'
+        print '[*] Error occurred.'
         return
     resp = re.sub(u'\ufeff','',resp.decode('utf-8'))
     try:

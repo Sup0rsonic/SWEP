@@ -40,13 +40,14 @@ class Scanner():
             if not self.GetAddress():
                 print '[!] Failed to get address, quitting.'
                 return
-            checker = threading.Thread(target=self.ThreadChecker)
-            checker.setDaemon(True)
-            checker.start()
             self.Thread = int(self.Thread)
             self.Timeout = int(self.Timeout)
             self.Lrange = int(self.Lrange)
             self.Rrange = int(self.Rrange)
+            checker = threading.Thread(target=self.ThreadChecker)
+            checker.setDaemon(True)
+            self.Status = True
+            checker.start()
             while True:
                 if len(self.TaskList) < self.Thread:
                     thread = threading.Thread(target=self.FetchData, args=[self.Lrange])
@@ -55,7 +56,9 @@ class Scanner():
                     self.Lrange += 1
                     if self.Lrange == self.Rrange:
                         print '[*] Scan completed, synchronizing threads.'
-                        thread.join()
+                        for item in self.TaskList:
+                            item.join()
+                        self.Status = False
                         break
             print '[*] Fetch completed, %i port(s) open.' %(len(self.PortList))
             if len(self.PortList):
@@ -68,6 +71,7 @@ class Scanner():
             print '[*] User stop.'
         except Exception, e:
             print '[!] Failed to fetch target data: %s' %(str(e))
+        self.Status = False
         return self.PortList
 
 
@@ -102,7 +106,7 @@ class Scanner():
 
 
     def ThreadChecker(self):
-        while True:
+        while self.Status:
             for item in self.TaskList:
                 if not item.isAlive():
                     self.TaskList.remove(item)
@@ -133,3 +137,4 @@ def test():
     scanner.Lrange = 0
     scanner.Rrange = 65535
     scanner.Scan()
+

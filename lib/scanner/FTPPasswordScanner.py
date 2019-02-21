@@ -36,7 +36,6 @@ class Scanner():
         self.PasswordFile = None
         self.UserpassFile = None
         self.Threads = 10
-        self._Counter = 0
         self.Timeout = 3
         self.Time = 0
         self.Status = False
@@ -64,21 +63,22 @@ class Scanner():
         checker.start()
         timer.start()
         try:
-            while True:
-                if not self.Status:
-                    break
+            while self.Queue.qsize():
                 if len(self.TaskList) < self.Threads:
                     thread = threading.Thread(target=self.CheckPassword, args=[self.Queue.get()])
                     thread.start()
                     self.TaskList.append(thread)
-                    time.sleep(0.3)
-                if not self.Status:
+                if not self.Queue.qsize():
+                    print '[*] Scan completed, synchronizing threads.'
+                    for item in self.TaskList:
+                        item.join()
                     break
         except KeyboardInterrupt:
             print '[*] Keyboard interrupt: Quitting.'
             return
         except Exception, e:
             print '[!] Failed attaining FTP password: %s' %(str(e))
+        self.Status = False
         return self.UserPassList
 
 
@@ -137,24 +137,24 @@ class Scanner():
         while self.Status:
             time.sleep(1)
             self.Time += 1
+        return
 
 
     def StatChecker(self):
         while self.Status:
             time.sleep(5)
             print '[*] %s thread running, %s item left, cost %s seconds' %(str(len(self.TaskList)), str(self.Queue.qsize()), self.Time)
-
+        return
 
 
     def ThreadChecker(self):
-        while True:
+        while self.Status:
             time.sleep(1)
             for item in self.TaskList:
                 if not item.isAlive():
                     self.TaskList.remove(item)
-            if not self.Queue.qsize() and len(self.TaskList) == 0:
-                self.Status = False
-                break
+                    del item
+        return
 
 
 

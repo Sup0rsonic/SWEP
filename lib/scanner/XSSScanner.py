@@ -32,6 +32,7 @@ class Scanner():
         self.Timeout = 3
         self.TaskList = []
         self.Status = False
+        self.UrlList = []
         self.VulUrlList = []
         self.PotentialVulUrlList = []
         self.Queue = queue.Queue()
@@ -56,7 +57,11 @@ class Scanner():
             Url = '%s://%s/' %(self.Protocol, self.Url)
             self.Thread = int(self.Thread)
             self.Spider.Url = self.Url
-            UrlList = self.Spider.SpiderSite()
+            if not self.UrlList:
+                UrlList = self.Spider.SpiderSite()
+            else:
+                UrlList = self.UrlList
+            print '[*] URL load completed.'
             if not UrlList:
                 print '[!] Failed to spider site.'
                 return
@@ -79,8 +84,11 @@ class Scanner():
                     thread = threading.Thread(target=self.CheckXSS, args=[self.Queue.get()])
                     thread.start()
                     self.TaskList.append(thread)
-                    if self.Queue.qsize() == 0:
-                        thread.join()
+                    if not self.Queue.qsize():
+                        print '[*] Scan completed, synchronizing threads.'
+                        for item in self.TaskList:
+                            item.join()
+                        self.Status = False
                         break
             print '[*] Check completed.'
             VulUrlCount = len(self.VulUrlList)
@@ -96,6 +104,7 @@ class Scanner():
                     print '[+]  | %s' %(item)
         except Exception, e:
             print '[!] Failed checking XSS: %s '%(str(e))
+        self.Status = False
         print '[+] Check completed.'
         return (self.VulUrlList, self.PotentialVulUrlList)
 
@@ -127,14 +136,12 @@ class Scanner():
         return UrlList
 
 
-
     def CheckXSS(self, Url):
             try:
                 CheckUrl = self.GenList(Url)
                 if not CheckUrl:
                     return
                 for item in CheckUrl:
-                    RawResp = requests.get(Url, timeout=3).text
                     ChkResp = requests.get(item, timeout=3)
                     print '[*] Checking %s' %(str(item))
                     if ChkResp.status_code == 404:
@@ -156,7 +163,6 @@ class Scanner():
             except Exception, e:
                 print '[!] Failed checking XSS, URL=%s: %s' %(Url, e)
             return
-
 
 
     def SimplifyPageList(self, pagelist): # A counter: time cost here = 0 minutes. Copied from sql injection scanner to save time.
@@ -189,7 +195,6 @@ class Scanner():
         return UrlList
 
 
-
     def SortNew(self, dict): # Copied from sql injection scanner.
         NewList = dict
         NewList.sort()
@@ -215,31 +220,32 @@ class Scanner():
 
 
     def ThreadChecker(self):
-        time.sleep(3)
-        while True:
+        time.sleep(1)
+        while self.Status:
             for item in self.TaskList:
                 if not item.isAlive():
                     self.TaskList.remove(item)
-            if not self.Queue.qsize() and len(self.TaskList) == 0:
-                self.Status = False
-                break
+                    del item
+        return
 
 
     def Timer(self):
         while self.Status:
             time.sleep(1)
             self.Time += 1
+        return
 
 
     def StatChecker(self):
         while self.Status:
             time.sleep(5)
             print '[*] %s thread running, %s item left, cost %s seconds' %(str(len(self.TaskList)), str(self.Queue.qsize()), self.Time)
+        return
 
 
 
 def test():
     scanner = Scanner()
-    scanner.Url = 'www.co-effort.com'
+    scanner.Url = ''
     scanner.Scan()
 

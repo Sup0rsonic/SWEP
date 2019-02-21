@@ -29,7 +29,6 @@ class Scanner():
     def __init__(self):
         self.Url = None
         self.Threads = 10
-        self._Counter = 0
         self.UrlList = []
         self.Queue = queue.Queue()
         self.Time = 0
@@ -75,7 +74,6 @@ class Scanner():
                 print '[+] Get management url: %s ,code=%s' %(ManageUrl, int(resp.status_code))
         except Exception, e:
             print '[!] Error getting management URL: %s' %(str(e))
-        self._Counter -= 1
         return
 
 
@@ -84,28 +82,46 @@ class Scanner():
         if not ManageUrlList:
             print '[!] Failed to load Management dictionary file, Quitting.'
             return
+        thread = threading.Thread(target=self.ThreadChecker)
+        thread.setDaemon(True)
         self.Status = True
+        thread.start()
         while True:
             try:
-                if self.Threads > self._Counter:
-                    self._Counter += 1
+                if self.Threads > len(self.TaskList):
                     thread = threading.Thread(target=self.GetPage, args=[self.Queue.get()])
-                    self.TaskList.append(thread)
                     thread.start() # Fuck race competition. I'm sick of this.
+                    self.TaskList.append(thread)
                     if not self.Queue.qsize():
-                        thread.join()
+                        print '[*] Scan completed, synchronizing threads.'
+                        for item in self.TaskList:
+                            item.join()
                         break
             except KeyboardInterrupt:
                 print '[*] Keyboard interrupt, Quitting.'
+                break
             except Exception, e:
                 print '[!] Failed to get management Url: %s' %(str(e))
         print '[+] Management scan completed.'
+        self.Status = False
         return self.ManageListFile
 
 
     def Scan(self):
         ManagementList = self.ScanManagement()
         return ManagementList
+
+
+    def ThreadChecker(self):
+        time.sleep(1)
+        while self.Status:
+            for item in self.TaskList:
+                if not item.isAlive():
+                    self.TaskList.remove(item)
+                    del item
+        return
+
+
 
     def info(self):
         InformationList = info()
@@ -128,5 +144,6 @@ class Scanner():
 
 def test():
     scanner = Scanner()
-    scanner.Url = None
+    scanner.Url = ''
     scanner.Scan()
+

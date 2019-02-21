@@ -121,6 +121,7 @@ class Scanner():
             for item in self.TaskList:
                 if not item.isAlive():
                     self.TaskList.remove(item)
+                    del item
             if not self.Status:
                 break
         return
@@ -170,7 +171,8 @@ class Scanner():
 
 def test():
     scanner = Scanner()
-    scanner.Url = 'www.phpcms.cn'
+    scanner.Url = ''
     scanner.Scan()
+
 
 

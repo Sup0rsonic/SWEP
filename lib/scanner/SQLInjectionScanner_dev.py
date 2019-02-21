@@ -120,28 +120,37 @@ class Scanner():
                 ArgList = item.split('?')
                 if len(ArgList) == 1:
                     if 'M' in self.ParameterMode.upper():
-                        if raw_input('[*] Not parameters found on %s. Do you want to modify it manually?(y/N)').upper() != 'Y':
+                        lurl = re.findall('//.*?(/.*)$', ArgList[0])[-1]
+                        surl = re.findall('/([^/]*)$', ArgList[0])[-1]
+                        if re.findall('\.css|\.js|\.jpg|\.png|\.ico|\.doc|\.bmp|\.pdf|\.ppt|\.xls|\.ex|\.ms|\.ap|\.mp|\.tx|\.sw|zip|\.rar|\.7z|\.tar|\.xz|\.gz|\.svg', surl):
+                            continue
+                        if raw_input('[*] No parameters found on %s. Do you want to modify it manually?(y/N)' %(ArgList[0])).upper() != 'Y':
                             SuffixList[ArgList[0]] = None
+                            continue
                         if raw_input('[*] Please specify Long/Short mode.(Long mode: /dir/page.ext, Short mode: page.ext)(L/s)').upper() != 's':
-                            url = re.findall('//.*$', ArgList[0])
+                            url = lurl
                         else:
-                            url = re.findall('/[^/]*$', ArgList[0])
-                        if url not in SuffixList.keys():
+                            url = surl
+                        if not SuffixList.has_key(url):
                             while True:
                                 parm = raw_input('[*] Parameter(s) for %s. e.g: parm1=123&parm2=321: ' %(url))
                                 if '=' in parm:
+                                    ArgList.append(parm)
+                                    SuffixList[url] = parm
                                     break
                                 if raw_input('[*] Invalid format, Retype?(Y/n)').upper() == 'N':
                                     if raw_input('[*] Do you want to pass this page in remaining test?(y/N) ').upper() != 'Y':
-                                        continue
+                                        break
                                     else:
-                                        SuffixList[ArgList[0]] = None
-                            SuffixList[url] = parm
-                        if not SuffixList[ArgList[0]]:
+                                        SuffixList[url] = 0
+                                        break
+                        if SuffixList[url] == 0:
                             continue
                         ArgList.append(SuffixList[url])
                     else:
                         continue
+                if len(ArgList) < 1:
+                    continue
                 ParmArgList = ArgList[1].split('&')
                 ParmArgDict = {}
                 for Argument in ParmArgList: # Extractval()
@@ -191,7 +200,9 @@ class Scanner():
                     thread.start()
                     self.TaskList.append(thread)
                     if not self.Queue.qsize():
-                        thread.join()
+                        print '[*] Scan completed, synchronizing threads.'
+                        for item in self.TaskList:
+                            item.join()
                         break
         except KeyboardInterrupt:
             print '[*] User stop.'
@@ -249,6 +260,7 @@ class Scanner():
             for item in self.TaskList:
                 if not item.isAlive():
                     self.TaskList.remove(item)
+                    del item
 
 
     def SortNew(self, dict):
@@ -257,11 +269,29 @@ class Scanner():
         return NewList
 
 
+    def info(self):
+        InformationList = info()
+        args = InformationList['parameters']
+        print '[*] Incoming scanner information:'
+        print '[*] Scanner name: %s' %(InformationList['name'])
+        print ' |   %s' %(InformationList['fullname'])
+        print ' |   Description: %s' %(InformationList['description'])
+        print ' |   Author: %s' %(InformationList['author'])
+        print ' |   Date: %s' %(InformationList['date'])
+        print ' |   Arguments: Total %i' %(len(args))
+        print ' |    |  NAME        DESCRIPTION'
+        print ' |    |  ----        `-----------'
+        for item in args.keys():
+            print ' |    |  %s%s' %(item.ljust(12), args[item])
+        print ' |'
+        print '[*] Scanner information end.'
+
+
 def test():
     scanner = Scanner()
-    scanner.Url = '192.168.0.101:8081/sqli-labs'
+    scanner.ParameterMode = 'm'
+    scanner.Url = 'www.phpcms.'
     scanner.Scan()
-    return
 
 
 if __name__ == '__main__':

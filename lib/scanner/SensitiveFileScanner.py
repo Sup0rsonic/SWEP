@@ -68,7 +68,7 @@ class Scanner():
     def LoadFileList(self):
         if not os.path.isfile(str(self.SensitiveFileDict)):
             print '[!] Invalid filename, Using default wordlist.'
-            self.SensitiveFileDict = '%s/../../WordList/SensitiveFile' %(self.Path)
+            self.SensitiveFileDict = '%s/../../WordLists/LargeSensitiveFileList.txt' %(self.Path)
         for item in open(str(self.SensitiveFileDict)):
             self.Append(item)
         for ext in ['zip', 'rar', '7z']:
@@ -97,6 +97,7 @@ class Scanner():
                 thread.start()
                 self.TaskList.append(thread)
                 if not self.queue.qsize():
+                    print '[*] Scan completed, synchronizing threads.'
                     for item in self.TaskList:
                         item.join()
                     self.Status = False
@@ -108,10 +109,13 @@ class Scanner():
     def GetPage(self, url):
         Url = '%s://%s/%s' % (self.Protocol, self.Url, url)
         try:
-            head = requests.head(Url, timeout=int(self.Timeout))
-            if head.status_code == 404:
-                return
-            resp = requests.get(Url, timeout=int(self.Timeout))
+            try:
+                head = requests.head(Url, timeout=int(self.Timeout), headers = {'User-Agent': 'YetAnotherBrowser:Foozillia:2.3.3'})
+                if head.status_code == 404:
+                    return
+            except requests.ConnectionError or requests.ConnectTimeout:
+                print '[*] Failed to connect to target with HEAD method, trying GET.'
+            resp = requests.get(Url, timeout=int(self.Timeout), headers = {'User-Agent': 'YetAnotherBrowser:Foozillia:2.3.3'})
             if resp.status_code == 302:
                 print '[*] 302 Found found at %s.' %(Url)
                 self.UrlList.append(Url)
@@ -146,7 +150,7 @@ class Scanner():
         except Exception, e:
             print '[!] Failed to get sensitive file: %s' %(str(e))
             self.UrlList = []
-        return self.UrlList
+        return self.UrlList,
 
 
     def ThreadChecker(self):
@@ -155,6 +159,7 @@ class Scanner():
             for item in self.TaskList:
                 if not item.isAlive():
                     self.TaskList.remove(item)
+                    del item
         return
 
 
@@ -178,5 +183,5 @@ class Scanner():
 
 def test():
     scanner = Scanner()
-    scanner.Url = None
+    scanner.Url = ''
     scanner.Scan()

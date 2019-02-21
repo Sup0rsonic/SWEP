@@ -1,6 +1,7 @@
 import hashlib
 import threading
 import queue
+import time
 
 
 def info():
@@ -12,6 +13,7 @@ def info():
         'parameters':{
             'Hash': 'Hash to crack',
             'mode': 'Hash mode',
+            'FileName': 'Wordlist name.',
             'Thread': 'Threads. Default: 10'
         },
         'author': 'BREACHERS security',
@@ -41,48 +43,82 @@ class Scanner():
                 return
         else:
             self.Hash = hash[0]
-        fp = open(self.FileName, 'w+')
+        fp = open(self.FileName, 'r+')
         for item in fp.read().split('\n'):
             self.Queue.put(item)
+        self.Status = True
+        threadchecker = threading.Thread(target=self._ThreadChecker)
+        threadchecker.setDaemon(True)
+        threadchecker.start()
         if self.mode == 'md5': # Duplicate but good for efficiency.
             while len(self.TaskList) or self.Queue.qsize():
                     if len(self.TaskList) < self.Thread:
-                        threading.Thread(target=self._Md5HashCracker, args=[self.Queue.get()]).start()
-                    if self.Status:
+                        thread = threading.Thread(target=self._Md5HashCracker, args=[self.Queue.get()])
+                        thread.start()
+                        self.TaskList.append(thread)
+                    if not self.Queue.qsize():
+                        print '[*] Scan completed, synchronizing thread.'
+                        for item in self.TaskList:
+                            item.join()
                         break
         elif self.mode == 'sha1':
             while len(self.TaskList) or self.Queue.qsize():
                     if len(self.TaskList) < self.Thread:
-                        threading.Thread(target=self._Sha1HashCracker, args=[self.Queue.get()]).start()
-                    if self.Status:
+                        thread = threading.Thread(target=self._Sha1HashCracker, args=[self.Queue.get()])
+                        thread.start()
+                        self.TaskList.append(thread)
+                    if not self.Queue.qsize():
+                        print '[*] Scan completed, synchronizing thread.'
+                        for item in self.TaskList:
+                            item.join()
                         break
         elif self.mode == 'sha224':
             while len(self.TaskList) or self.Queue.qsize():
                 if len(self.TaskList) < self.Thread:
-                    threading.Thread(target=self._Sha224HashCracker, args=[self.Queue.get()]).start()
-                if self.Status:
-                    break
+                        thread = threading.Thread(target=self._Sha224HashCracker, args=[self.Queue.get()])
+                        thread.start()
+                        self.TaskList.append(thread)
+                if not self.Queue.qsize():
+                    print '[*] Scan completed, synchronizing thread.'
+                    for item in self.TaskList:
+                        item.join()
+                        break
         elif self.mode == 'sha256':
             while len(self.TaskList) or self.Queue.qsize():
                 if len(self.TaskList) < self.Thread:
-                    threading.Thread(target=self._Sha256HashCracker, args=[self.Queue.get()]).start()
-                if self.Status:
-                    break
+                    thread = threading.Thread(target=self._Sha256HashCracker, args=[self.Queue.get()])
+                    thread.start()
+                    self.TaskList.append(thread)
+                if not self.Queue.qsize():
+                    print '[*] Scan completed, synchronizing thread.'
+                    for item in self.TaskList:
+                        item.join()
+                        break
         elif self.mode == 'sha384':
             while len(self.TaskList) or self.Queue.qsize():
                 if len(self.TaskList) < self.Thread:
-                    threading.Thread(target=self._Sha256HashCracker, args=[self.Queue.get()]).start()
-                if self.Status:
-                    break
+                    thread = threading.Thread(target=self._Sha384HashCracker, args=[self.Queue.get()])
+                    thread.start()
+                    self.TaskList.append(thread)
+                if not self.Queue.qsize():
+                    print '[*] Scan completed, synchronizing thread.'
+                    for item in self.TaskList:
+                        item.join()
+                        break
         elif self.mode == 'sha512':
             while len(self.TaskList) or self.Queue.qsize():
                 if len(self.TaskList) < self.Thread:
-                    threading.Thread(target=self._Sha512HashCracker, args=[self.Queue.get()]).start()
-                if self.Status:
-                    break
+                    thread = threading.Thread(target=self._Sha512HashCracker, args=[self.Queue.get()])
+                    thread.start()
+                    self.TaskList.append(thread)
+                if not self.Queue.qsize():
+                    print '[*] Scan completed, synchronizing thread.'
+                    for item in self.TaskList:
+                        item.join()
+                        break
         else:
             print '[!] Invalid hash type. Support type: md5, sha1|224|256|384|512.'
-            return
+        self.Status = False
         if self.PlainText:
             print '[+] Password found: %s' % (self.PlainText)
             return self.PlainText
@@ -93,49 +129,58 @@ class Scanner():
 
     def _Md5HashCracker(self, plaintext):
         print '[*] Checking %s' %(plaintext)
-        if hashlib.md5(plaintext).hexdigest() == hashlib.md5(self.Hash).hexdigest():
-            self.Status = True
+        if hashlib.md5(plaintext).hexdigest() == self.Hash:
+            self.Status = False
             self.PlainText = plaintext
         return
 
     def _Sha1HashCracker(self, plaintext):
         print '[*] Checking %s' %(plaintext)
-        if hashlib.sha1(plaintext).hexdigest() == hashlib.md5(self.Hash).hexdigest():
-            self.Status = True
+        if hashlib.sha1(plaintext).hexdigest() == self.Hash:
+            self.Status = False
             self.PlainText = plaintext
         return
 
 
     def _Sha224HashCracker(self, plaintext):
         print '[*] Checking %s' %(plaintext)
-        if hashlib.sha224(plaintext).hexdigest() == hashlib.md5(self.Hash).hexdigest():
-            self.Status = True
+        if hashlib.sha224(plaintext).hexdigest() == self.Hash:
+            self.Status = False
             self.PlainText = plaintext
         return
 
 
     def _Sha256HashCracker(self, plaintext):
         print '[*] Checking %s' %(plaintext)
-        if hashlib.sha256(plaintext).hexdigest() == hashlib.md5(self.Hash).hexdigest():
-            self.Status = True
+        if hashlib.sha256(plaintext).hexdigest() == self.Hash:
+            self.Status = False
             self.PlainText = plaintext
         return
 
 
-
     def _Sha384HashCracker(self, plaintext):
         print '[*] Checking %s' %(plaintext)
-        if hashlib.sha384(plaintext).hexdigest() == hashlib.md5(self.Hash).hexdigest():
-            self.Status = True
+        if hashlib.sha384(plaintext).hexdigest() == self.Hash:
+            self.Status = False
             self.PlainText = plaintext
         return
 
 
     def _Sha512HashCracker(self, plaintext):
         print '[*] Checking %s' %(plaintext)
-        if hashlib.sha512(plaintext).hexdigest() == hashlib.md5(self.Hash).hexdigest():
-            self.Status = True
+        if hashlib.sha512(plaintext).hexdigest() == self.Hash:
+            self.Status = False
             self.PlainText = plaintext
+        return
+
+
+    def _ThreadChecker(self):
+        time.sleep(1)
+        while self.Status:
+            for item in self.TaskList:
+                if not item.isAlive():
+                    self.TaskList.remove(item)
+                    del item
         return
 
 
@@ -169,6 +214,8 @@ class Scanner():
 
 def test():
     scanner = Scanner()
-    scanner.Hash = '21232f297a57a5a743894a0e4a801fc3'
+    scanner.Hash = '42995f342e8abd019311aaed89d550ae'
+    scanner.mode = 'md5'
+    scanner.FileName = '/home/nimda/swep/WordLists/TestDict'
     scanner.CrackHash()
 

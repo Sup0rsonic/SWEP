@@ -4,6 +4,7 @@ import difflib
 import threading
 import queue
 import lib.spider.Spider
+import time
 
 
 def info():
@@ -36,12 +37,11 @@ class Scanner():
         self.KeywordList = ['w', '\') ','")' , '%23', '--w']
         self.Spider = lib.spider.Spider.Spider()
         self.differ = difflib.SequenceMatcher()
-        # self.Spider.url = self.Url
-        # self.Spider.Threads = self.Threads
-        # self.Spider.Protocol = self.Protocol
-        self.queue = queue.Queue()
+        self.Queue = queue.Queue()
+        self.Status = True
+        self.TaskList = []
+        self.PageList = []
         self.UrlList = []
-        self.Name = 'SQLi'
 
 
     def GetSitePages(self, *PageList):
@@ -73,8 +73,10 @@ class Scanner():
 
 
     def CheckSQLInjection(self):
-        ParmDict = self.GetSitePages()
-        Payloads = []
+        if not self.PageList:
+            ParmDict = self.GetSitePages()
+        else:
+            ParmDict = self.GetSitePages(self.PageList)
         self.Threads = int(self.Threads)
         self.Timeout = int(self.Timeout)
         for url in ParmDict.keys():
@@ -83,21 +85,30 @@ class Scanner():
                     print '[!] Error: URL not specified.'
                 RawUrl = '%s://%s/%s?' %(self.Protocol, self.Url, url)
                 PayloadList = self.GenPayload(RawUrl, ParmDict[url]) # {url:{parm:keyword}}
-                self.queue.put(PayloadList)
+                self.Queue.put(PayloadList)
             except Exception, e:
                 print '[!] Error generating payload: %s' %(str(e))
+        taskchecker = threading.Thread(target=self.ThreadChecker)
+        taskchecker.setDaemon(True)
+        self.Status = True
+        taskchecker.start()
         try:
-            while True:
-                if self.Threads > self._Counter:
-                    thread = threading.Thread(target=self.CheckVunerability, args=[self.queue.get()])
+            while self.Queue.qsize():
+                if self.Threads > len(self.TaskList):
+                    thread = threading.Thread(target=self.CheckVunerability, args=[self.Queue.get()])
                     thread.start()
-                    if self.queue.qsize() == 0:
-                        thread.join()
+                    self.TaskList.append(thread)
+                    if not self.Queue.qsize():
+                        print '[*] Scan completed, synchronizing threads.'
+                        for item in self.TaskList:
+                            item.join()
                         break
         except KeyboardInterrupt:
             print '[*] Keyboard interrupt, Quitting.'
         except Exception, e:
             print '[!] Error checking SQL injection: %s' %(str(e))
+        self.Status = False
+        return self.UrlList
 
 
     def GenPayload(self, url, Payloads): # Gen payload: first parm, second parm, both parm
@@ -158,6 +169,17 @@ class Scanner():
         return UrlList
 
 
+    def ThreadChecker(self):
+        time.sleep(1)
+        while self.Status:
+            for item in self.TaskList:
+                if not item.isAlive():
+                    self.TaskList.remove(item)
+                    del item
+        return
+
+
+
     def info(self):
         InformationList = info()
         args = InformationList['parameters']
@@ -181,6 +203,4 @@ def test():
     scanner = Scanner()
     scanner.Url = ''
     scanner.Scan()
-
-
 
