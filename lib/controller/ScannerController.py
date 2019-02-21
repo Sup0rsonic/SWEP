@@ -93,6 +93,7 @@ class ScannerController():
             module = importlib.import_module('lib.scanner.' + path)
             self.Scanner = module.Scanner()
             self.Name = module.info()['name']
+            self.Scanner.Name = module.info()['name']
             print '[*] Load complete.'
         except Exception, e:
             print '[!] Failed to load module from database %s: %s' %(module, e)
