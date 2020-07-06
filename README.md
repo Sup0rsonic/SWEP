@@ -41,7 +41,8 @@ This is a new project and we want you join this project and work together.
                   New intruder module is under development, Contact <1nt3rcepter@gmail.com> to join.  
 27 January, 2019: Fixed threading bug  
 21 Feburary, 2019: <http://www.webscan.cc> now down, Domain function will temporary not availiable before next release.  
-22 Feburary, 2019: 1.0.3 Stable released. Optimized code, more scanner and wordlist.
+22 Feburary, 2019: 1.0.3 Stable released. Optimized code, more scanner and wordlist.  
+06 July 2020: Python 3 rework under process, New version will be SWEP 3.0. Including stablity update and more user-friendly interface.
 ### Release log  
 #### 1.0.3
 > Fixed more bugs, improved user experience.
