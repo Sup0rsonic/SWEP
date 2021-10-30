@@ -6,6 +6,9 @@
 SWEP is an open-source Web Exploitation Project.  
 The project is under a complete rework for integration with NEKOIntel and modern web/host vulnerability scanners with better code and less fuck-ups.  
 To be honest, This is my first big project, and I'm just suck at it back then.
+## 描述(CN)
+这个项目需要使用Python3完全重写，而且目前停止了维护，以兼容新的Python版本，现代扫描器和另一个名为NEKOIntel的资产收集工具。新的仓库名将是NEKOThreat。说实话...我其实不想管这座屎山了。  
+目前的版本依然可以在Python2.7下正常运行。  
 ## Version
 Ver 1.0.3 development stable
 ## Description
