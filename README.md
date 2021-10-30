@@ -3,7 +3,9 @@
 ![image](https://img.shields.io/badge/Python-2.7-blue.svg?style=flat-square&logo=python)
 ![image](https://img.shields.io/badge/license-MIT-lightgreen.svg?style=flat-square)  
 # SWEP
-SWEP is an open-source Web Exploitation Project.
+SWEP is an open-source Web Exploitation Project.  
+The project is under a complete rework for integration with NEKOIntel and modern web/host vulnerability scanners with better code and less fuck-ups.  
+To be honest, This is my first big project, and I'm just suck at it back then.
 ## Version
 Ver 1.0.3 development stable
 ## Description
